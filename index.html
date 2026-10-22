@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LinoLingo - Curso Interactivo de Linografía y Linograbado</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800;900&display=swap');
+
+        :root {
+            --font-display: 'Fredoka', cursive, sans-serif;
+            --font-body: 'Nunito', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background-color: #f8fafc;
+            color: #0f172a;
+            user-select: none;
+            -webkit-user-select: none;
+            overflow-x: hidden;
+            width: 100vw;
+            max-width: 100vw;
+            box-sizing: border-box;
+        }
+
+        .font-display {
+            font-family: var(--font-display);
+        }
+
+        /* Prevent button text wrapping breaking layout */
+        button {
+            touch-action: manipulation;
+        }
+
+        /* Custom Animated Pulse for Active Node */
+        @keyframes duolingo-pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.4); }
+            50% { transform: scale(1.06); box-shadow: 0 0 0 12px rgba(217, 119, 6, 0); }
+        }
+
+        .node-active-pulse {
+            animation: duolingo-pulse 2s infinite ease-in-out;
+        }
+
+        /* Entry Animations */
+        @keyframes pop {
+            0% { transform: scale(0.95); opacity: 0; }
+            70% { transform: scale(1.02); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .animate-pop {
+            animation: pop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen flex flex-col justify-between overflow-x-hidden">
+
+    <!-- TOP NAV / STATS BAR -->
+    <header class="sticky top-0 z-30 bg-white/95 backdrop-blur border-b-2 border-slate-200 px-3 sm:px-4 py-2.5 shadow-sm max-w-full">
+        <div class="max-w-md mx-auto flex items-center justify-between gap-1.5">
+            
+            <!-- Logo -->
+            <div class="flex items-center gap-2 cursor-pointer" onclick="app.showHome()">
+                <div class="w-8 h-8 sm:w-9 sm:h-9 bg-amber-600 rounded-xl flex items-center justify-center text-white shadow transform -rotate-3">
+                    <i data-lucide="scissors" class="w-5 h-5"></i>
+                </div>
+                <div class="hidden sm:block">
+                    <h1 class="font-display font-bold text-base text-slate-800 leading-none">LinoLingo</h1>
+                    <span class="text-[9px] font-extrabold tracking-widest text-amber-700 uppercase">Linograbado</span>
+                </div>
+            </div>
+
+            <!-- Stats Bar (Streak, XP, Hearts) -->
+            <div class="flex items-center gap-1.5 sm:gap-2.5">
+                <!-- Streak -->
+                <div class="flex items-center gap-1 bg-amber-50 border border-amber-200 px-2 py-1 rounded-full" title="Racha de días">
+                    <i data-lucide="flame" class="w-4 h-4 text-orange-500 fill-orange-500"></i>
+                    <span id="stat-streak" class="font-extrabold text-xs sm:text-sm text-amber-700">1</span>
+                </div>
+
+                <!-- XP -->
+                <div class="flex items-center gap-1 bg-yellow-50 border border-yellow-200 px-2 py-1 rounded-full" title="Experiencia XP">
+                    <i data-lucide="sparkles" class="w-4 h-4 text-amber-500 fill-amber-500"></i>
+                    <span id="stat-xp" class="font-extrabold text-xs sm:text-sm text-amber-600">0</span>
+                </div>
+
+                <!-- Hearts / Lives -->
+                <div class="flex items-center gap-1 bg-red-50 border border-red-200 px-2 py-1 rounded-full" title="Vidas">
+                    <i data-lucide="heart" class="w-4 h-4 text-red-500 fill-red-500"></i>
+                    <span id="stat-lives" class="font-extrabold text-xs sm:text-sm text-red-600">5</span>
+                </div>
+
+                <!-- Info Modal -->
+                <button onclick="app.toggleModal('modal-info', true)" class="p-1.5 rounded-xl border-2 border-slate-200 hover:bg-slate-100 text-slate-600 transition-colors" title="Información y Fuentes">
+                    <i data-lucide="info" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN APP CONTAINER -->
+    <main class="flex-1 max-w-md w-full mx-auto p-4 pb-20">
+        
+        <!-- HOME / DUOLINGO SERPENTINE PATH MAP -->
+        <div id="view-map" class="space-y-6">
+            
+            <!-- Banner Header -->
+            <div class="bg-gradient-to-br from-amber-600 via-amber-700 to-orange-700 rounded-2xl p-4 sm:p-5 text-white shadow-md relative overflow-hidden">
+                <div class="relative z-10">
+                    <span class="bg-amber-800/60 text-amber-200 text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full border border-amber-500/30">Curso Práctico</span>
+                    <h2 class="font-display text-xl sm:text-2xl font-bold mt-1">Ruta del Linograbador</h2>
+                    <p class="text-amber-100 text-xs mt-1 leading-relaxed">Completa los nodos para dominar matrices, corte, entintado y estampa manual.</p>
+                </div>
+                <i data-lucide="layers" class="absolute -right-4 -bottom-4 w-24 h-24 text-white/10 transform rotate-12"></i>
+            </div>
+
+            <!-- Path Container -->
+            <div id="serpentine-path-container" class="relative py-4 space-y-12">
+                <!-- Dynamic Nodes injected by JS -->
+            </div>
+        </div>
+
+        <!-- LESSON ACTIVE VIEW -->
+        <div id="view-lesson" class="hidden min-h-[75vh] flex flex-col justify-between max-w-full">
+            
+            <!-- Lesson Header Bar -->
+            <div class="flex items-center gap-3 mb-3">
+                <button onclick="app.confirmExitLesson()" class="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors" title="Salir de la lección">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+                
+                <!-- Progress Bar -->
+                <div class="flex-1 bg-slate-200 h-3.5 rounded-full overflow-hidden">
+                    <div id="lesson-progress-bar" class="bg-amber-500 h-full w-0 transition-all duration-300 rounded-full"></div>
+                </div>
+
+                <div class="flex items-center gap-1 text-red-500 font-black text-sm">
+                    <i data-lucide="heart" class="w-4 h-4 fill-red-500"></i>
+                    <span id="lesson-lives-count">5</span>
+                </div>
+            </div>
+
+            <!-- Lesson Body Slide Content -->
+            <div id="lesson-content" class="flex-1 flex flex-col justify-center my-2 animate-pop">
+                <!-- Slide content dynamically rendered -->
+            </div>
+
+            <!-- Lesson Navigation Footer -->
+            <div class="mt-4 pt-3 border-t-2 border-slate-100 flex items-center justify-between gap-3">
+                <button id="btn-prev-step" onclick="app.prevStep()" class="hidden px-4 py-3 rounded-xl border-2 border-slate-300 text-slate-600 font-bold hover:bg-slate-100 transition-colors flex items-center gap-1.5">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                    <span class="text-sm">Anterior</span>
+                </button>
+
+                <button id="btn-next-step" onclick="app.handleNextClick()" class="flex-1 py-3.5 rounded-xl bg-amber-600 hover:bg-amber-700 active:scale-[0.99] text-white font-extrabold text-center shadow-md transition-all flex items-center justify-center gap-2">
+                    <span id="btn-next-text" class="text-base">Continuar</span>
+                    <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-white border-t border-slate-200 py-3 text-center text-xs text-slate-400">
+        LinoLingo &copy; 2026 • Guía Profesional e Interactiva de Grabado en Relieve
+    </footer>
+
+    <!-- EXIT CONFIRMATION MODAL -->
+    <div id="modal-exit" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl p-6 max-w-xs w-full shadow-2xl animate-pop text-center space-y-4">
+            <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto">
+                <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+            </div>
+            <h3 class="font-display text-xl font-bold text-slate-800">¿Quieres salir?</h3>
+            <p class="text-xs text-slate-600">Perderás el avance actual de esta lección.</p>
+            <div class="flex gap-2 pt-2">
+                <button onclick="app.toggleModal('modal-exit', false)" class="flex-1 py-2.5 rounded-xl border-2 border-slate-200 text-slate-600 font-bold text-sm hover:bg-slate-50">Cancelar</button>
+                <button onclick="app.exitLesson()" class="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold text-sm shadow">Salir</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- INFO / ABOUT & CREDITS MODAL -->
+    <div id="modal-info" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl p-5 max-w-sm w-full shadow-2xl animate-pop my-4 relative max-h-[85vh] overflow-y-auto space-y-3">
+            <button onclick="app.toggleModal('modal-info', false)" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-amber-600 text-white rounded-xl flex items-center justify-center">
+                    <i data-lucide="scissors" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h3 class="font-display text-lg font-bold text-slate-800 leading-tight">Acerca de LinoLingo</h3>
+                    <p class="text-[11px] text-amber-700 font-extrabold uppercase tracking-wide">Plataforma Didáctica de Grabado</p>
+                </div>
+            </div>
+
+            <div class="space-y-3 text-xs text-slate-600 leading-relaxed border-t border-slate-100 pt-3">
+                <p><strong>LinoLingo</strong> es una plataforma interactiva gamificada estructurada para guiar al estudiante desde la teoría de materiales hasta la estampa artística final.</p>
+                
+                <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wider text-amber-800">🎯 Propuesta Pedagógica:</h4>
+                <ul class="list-disc pl-4 space-y-1">
+                    <li>Ruta progresiva estilo Duolingo con evaluación continua.</li>
+                    <li>Énfasis estricto en bioseguridad en el taller y uso seguro de herramientas cortantes.</li>
+                    <li>Dominio técnico de química de tintas, presión manual y registro de papel.</li>
+                </ul>
+
+                <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wider text-amber-800">📚 Fuentes e Insumos Oficiales:</h4>
+                <ul class="list-disc pl-4 space-y-1 text-slate-500">
+                    <li><strong>Cranfield Colours:</strong> Especificaciones de tintas lavables al agua a base de aceite <em>Caligo Safe Wash</em>.</li>
+                    <li><strong>Speedball Art Products & Essdee:</strong> Guías de gubias en V/U, polímeros Softcut y linóleo Battleship.</li>
+                    <li><strong>Manuales Tradicionales de Xilografía:</strong> Técnicas de estampa con Baren japonés y papel de fibra Kozo.</li>
+                </ul>
+            </div>
+
+            <button onclick="app.toggleModal('modal-info', false)" class="w-full py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold text-sm rounded-xl shadow mt-2">Entendido</button>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT APPLICATION LOGIC -->
+    <script>
+        // --- SYNTHESIZED WEB AUDIO SOUNDS ---
+        class SoundFX {
+            constructor() {
+                this.ctx = null;
+            }
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            }
+            playTone(freq, type, duration, vol = 0.1) {
+                try {
+                    this.init();
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + duration);
+                } catch(e){}
+            }
+            correct() {
+                this.playTone(523.25, 'sine', 0.12);
+                setTimeout(() => this.playTone(659.25, 'sine', 0.2), 90);
+            }
+            incorrect() {
+                this.playTone(220, 'sawtooth', 0.18);
+                setTimeout(() => this.playTone(185, 'sawtooth', 0.25), 120);
+            }
+            click() {
+                this.playTone(440, 'triangle', 0.04, 0.05);
+            }
+            victory() {
+                this.playTone(523.25, 'sine', 0.1);
+                setTimeout(() => this.playTone(659.25, 'sine', 0.1), 100);
+                setTimeout(() => this.playTone(783.99, 'sine', 0.25), 200);
+            }
+        }
+        const sfx = new SoundFX();
+
+        // --- COMPREHENSIVE COURSE CURRICULUM (5 MODULES) ---
+        const COURSE_DATA = [
+            {
+                id: "mod-1",
+                title: "Módulo 1: Insumos y Matrices",
+                desc: "Planchas, gubias, tintas, rodillos y papeles.",
+                color: "amber",
+                lessons: [
+                    {
+                        id: "les-1-1",
+                        title: "Tipos de Matrices (Linóleo vs Softcut)",
+                        steps: [
+                            {
+                                type: "theory",
+                                title: "Linóleo Tradicional vs Sintéticos",
+                                content: "El <strong>linóleo tradicional</strong> se compone de aceite de linaza, harina de madera y resinas sobre arpillera/yute. Es firme y permite líneas muy finas. El <strong>Softcut/Vinilo</strong> es más blando, ideal para principiantes pero menos preciso en detalles minúsculos.",
+                                svg: `<svg viewBox="0 0 200 100" class="w-full h-32 mx-auto"><rect x="20" y="30" width="70" height="50" rx="4" fill="#d97706"/><rect x="20" y="70" width="70" height="10" fill="#78350f"/><text x="55" y="55" text-anchor="middle" font-size="10" font-weight="bold" fill="white">Linóleo</text><rect x="110" y="30" width="70" height="50" rx="4" fill="#38bdf8"/><text x="145" y="55" text-anchor="middle" font-size="10" font-weight="bold" fill="white">Softcut</text></svg>`
+                            },
+                            {
+                                type: "quiz-single",
+                                question: "¿Cuál es el componente orgánico principal del linóleo tradicional?",
+                                options: ["Plástico PVC", "Aceite de linaza y harina de madera", "Goma arábiga"],
+                                correct: 1,
+                                feedback: "¡Exacto! La linaza industrializada endurecida con serrín otorga la consistencia perfecta para la talla."
+                            }
+                        ]
+                    },
+                    {
+                        id: "les-1-2",
+                        title: "Gubias V y U",
+                        steps: [
+                            {
+                                type: "theory",
+                                title: "Perfiles de Corte: V vs U",
+                                content: "Las gubias en <strong>'V'</strong> cortan un surco limpio y angosto; son las indicadas para delinear y hacer detalles. Las gubias en <strong>'U'</strong> extraen una franja ancha y plana, perfectas para vaciar grandes áreas de fondo.",
+                                svg: `<svg viewBox="0 0 200 90" class="w-full h-28 mx-auto"><path d="M 30 20 L 60 70 L 90 20" fill="none" stroke="#dc2626" stroke-width="8" stroke-linecap="round"/><text x="60" y="85" text-anchor="middle" font-size="11" font-weight="bold" fill="#dc2626">Gubia en V (Perfilado)</text><path d="M 120 20 Q 150 85 180 20" fill="none" stroke="#2563eb" stroke-width="8" stroke-linecap="round"/><text x="150" y="85" text-anchor="middle" font-size="11" font-weight="bold" fill="#2563eb">Gubia en U (Vacioso)</text></svg>`
+                            },
+                            {
+                                type: "quiz-single",
+                                question: "¿Qué gubia debes utilizar para vaciar el fondo amplio de una matriz?",
+                                options: ["Gubia en V delgada", "Gubia en U ancha", "Bisturí recto"],
+                                correct: 1,
+                                feedback: "¡Correcto! La gubia en U retira gran volumen de material rápidamente sin dejar marcas profundas."
+                            }
+                        ]
+                    },
+                    {
+                        id: "les-1-3",
+                        title: "Tintas y Papeles de Estampa",
+                        steps: [
+                            {
+                                type: "theory",
+                                title: "Tintas Caligo y Papel Japonés",
+                                content: "Las tintas <strong>Caligo Safe Wash</strong> son a base de aceite soluble pero se limpian solo con agua y jabón sin solventes. Para la estampa manual se recomiendan papeles livianos de fibra larga como el <strong>Kozo o Kitakata</strong> (30-90 gsm).",
+                                svg: `<svg viewBox="0 0 200 90" class="w-full h-28 mx-auto"><rect x="30" y="20" width="40" height="50" rx="4" fill="#0f172a"/><path d="M 30 40 L 70 40" stroke="#f59e0b" stroke-width="4"/><text x="50" y="82" text-anchor="middle" font-size="10" font-weight="bold" fill="#0f172a">Tinta Caligo</text><rect x="110" y="15" width="60" height="60" fill="#fff" stroke="#cbd5e1" stroke-width="2"/><line x1="120" y1="25" x2="160" y2="25" stroke="#e2e8f0" stroke-width="3"/><text x="140" y="88" text-anchor="middle" font-size="10" font-weight="bold" fill="#0f172a">Papel Kozo</text></svg>`
+                            },
+                            {
+                                type: "quiz-single",
+                                question: "¿Qué ventaja principal ofrecen las tintas tipo Caligo Safe Wash?",
+                                options: ["Secan en 2 segundos", "Tienen base de aceite pero se limpian con agua", "No necesitan rodillo"],
+                                correct: 1,
+                                feedback: "¡Excelente! Brindan la calidad y viscosidad del aceite pero facilitan la limpieza ecológica."
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: "mod-2",
+                title: "Módulo 2: Dibujo y Transferencia",
+                desc: "Efecto espejo, calco e inversión de tonos.",
+                color: "orange",
+                lessons: [
+                    {
+                        id: "les-2-1",
+                        title: "Imagen Especular y Matriz Invertida",
+                        steps: [
+                            {
+                                type: "theory",
+                                title: "Inversión Izquierda-Derecha",
+                                content: "Toda imagen estampada se imprime reflejada. Si tu diseño incluye letras o números, <strong>debes invertirlos en espejo</strong> antes de pasarlos a la matriz.",
+                                svg: `<svg viewBox="0 0 200 90" class="w-full h-28 mx-auto"><text x="50" y="60" font-size="48" font-weight="extrabold" fill="#d97706">B</text><text x="150" y="60" font-size="48" font-weight="extrabold" fill="#0f172a" transform="scale(-1,1) translate(-200,0)">B</text><path d="M 95 20 L 95 70" stroke="#cbd5e1" stroke-dasharray="4"/></svg>`
+                            },
+                            {
+                                type: "quiz-single",
+                                question: "Si tu diseño matriz tiene una firma legible de izquierda a derecha, ¿cómo aparecerá en el papel?",
+                                options: ["Exactamente igual", "Invertida al revés (efecto espejo)", "Borrosa"],
+                                correct: 1,
+                                feedback: "¡Exacto! Todo lo grabado en la matriz se invierte al estampar."
+                            }
+                        ]
+                    },
+                    {
+                        id: "les-2-2",
+                        title: "Métodos de Transferencia y Tinta China",
+                        steps: [
+                            {
+                                type: "theory",
+                                title: "Entintado Prevencional de la Plancha",
+                                content: "Aplica una capa muy tenue de <strong>tinta china teñida o marcador permanente</strong> sobre el linóleo antes de tallar. Al cortar con la gubia, el contraste entre la superficie teñida y el linóleo claro revelará tus trazos al instante.",
+                                svg: `<svg viewBox="0 0 200 80" class="w-full h-24 mx-auto"><rect x="20" y="20" width="160" height="40" fill="#334155" rx="4"/><path d="M 40 40 L 100 40" stroke="#fef08a" stroke-width="6" stroke-linecap="round"/><text x="100" y="75" text-anchor="middle" font-size="10" font-weight="bold" fill="#475569">Corte expuesto (contraste alto)</text></svg>`
+                            },
+                            {
+                                type: "quiz-single",
+                                question: "¿Para qué sirve teñir la superficie del linóleo antes de comenzar a cortar?",
+                                options: ["Para impermeabilizar", "Para visualizar claramente qué zonas se han tallado", "Para ablandar el linóleo"],
+                                correct: 1,
+                                feedback: "¡Perfecto! El contraste visual ayuda a evitar errores de corte no deseados."
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: "mod-3",
+                title: "Módulo 3: Técnica de Talla y Seguridad",
+                desc: "Posición de manos, ángulos de corte y control.",
+                color: "red",
+                lessons: [
+                    {
+                        id: "les-3-1",
+                        title: "La Regla de la Mano Libre",
+                        steps: [
+                            {
+                                type: "theory",
+                                title: "Bioseguridad en el Taller",
+                                content: "<strong>REGLA DE ORO:</strong> Jamás ubiques la mano de apoyo por delante de la dirección de empuje de la gubia. Utiliza siempre un <strong>tope de banco (topetón)</strong> para fijar la matriz.",
+                                svg: `<svg viewBox="0 0 200 90" class="w-full h-28 mx-auto"><path d="M 30 45 L 120 45" stroke="#16a34a" stroke-width="8" stroke-linecap="round" marker-end="url(#arrow)"/><circle cx="160" cy="45" r="16" fill="#ef4444"/><text x="160" y="51" text-anchor="middle" fill="white" font-weight="black" font-size="16">X</text><text x="100" y="80" text-anchor="middle" font-size="10" font-weight="bold" fill="#0f172a">Talla alejada de tu mano</text></svg>`
+                            },
+                            {
+                                type: "quiz-single",
+                                question: "¿Dónde debe posicionarse la mano que sostiene la matriz durante la talla?",
+                                options: ["Delante del avance de la gubia", "Siempre detrás de la trayectoria de corte", "Sobre la cuchilla de la gubia"],
+                                correct: 1,
+                                feedback: "¡Respuesta vital! Mantener la mano atrás previene heridas graves si la gubia resbala."
+                            }
+                        ]
+                    },
+                    {
+                        id: "les-3-2",
+                        title: "Ángulo de Corte a 30°",
+                        steps: [
+                            {
+                                type: "theory",
+                                title: "Inclinación Precisa de la Cuchilla",
+                                content: "Sostén la gubia en un ángulo aproximado de <strong>30° respecto a la plancha</strong>. Si el ángulo es muy vertical perforarás la tela de yute; si es muy plano la gubia resbalará por la superficie.",
+                                svg: `<svg viewBox="0 0 200 80" class="w-full h-24 mx-auto"><rect x="20" y="50" width="160" height="20" fill="#d97706"/><line x1="40" y1="50" x2="110" y2="20" stroke="#0f172a" stroke-width="6" stroke-linecap="round"/><path d="M 60 50 A 20 20 0 0 0 75 36" fill="none" stroke="#ef4444" stroke-width="2"/><text x="85" y="45" font-size="10" font-weight="bold" fill="#ef4444">30°</text></svg>`
+                            },
+                            {
+                                type: "quiz-single",
+                                question: "¿Qué ocurre si tallas con un ángulo demasiado empinado (ej. 70°)?",
+                                options: ["El corte queda perfecto", "Atraviesas y rompes la base de yute de la matriz", "La tinta se corre"],
+                                correct: 1,
+                                feedback: "¡Así es! Un ángulo muy inclinado daña la matriz irreversiblemente."
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: "mod-4",
+                title: "Módulo 4: Entintado y Estampa Manual",
+                desc: "Estirado de tinta, rodillo, baren y presión.",
+                color: "emerald",
+                lessons: [
+                    {
+                        id: "les-4-1",
+                        title: "Carga de Tinta y Sonido de Velcro",
+                        steps: [
+                            {
+                                type: "theory",
+                                title: "Textura 'Piel de Naranja'",
+                                content: "Aplica una pequeña gota de tinta sobre un vidrio. Pasa el rodillo alternando direcciones horizontal y vertical hasta lograr un microrrelieve uniforme y escuchar un <strong>sonido pegajoso suave (similar a velcro)</strong>.",
+                                svg: `<svg viewBox="0 0 200 90" class="w-full h-28 mx-auto"><rect x="50" y="25" width="100" height="25" rx="12" fill="#1e293b"/><rect x="90" y="50" width="20" height="35" fill="#64748b"/><text x="100" y="18" text-anchor="middle" font-size="10" font-weight="bold" fill="#16a34a">Capa delgada con micro-textura</text></svg>`
+                            },
+                            {
+                                type: "quiz-single",
+                                question: "¿Cuál es la señal auditiva/visual de que la tinta en el rodillo está lista?",
+                                options: ["Charco brillante y goteo", "Sonido suavecito de velcro y textura piel de naranja", "Superficie seca sin brillo"],
+                                correct: 1,
+                                feedback: "¡Excelente! Una capa delgada evita que la tinta obstruya los surcos tallados."
+                            }
+                        ]
+                    },
+                    {
+                        id: "les-4-2",
+                        title: "Estampa Práctica con Baren o Cuchara",
+                        steps: [
+                            {
+                                type: "theory",
+                                title: "Frotado Manual en Espiral",
+                                content: "Coloca el papel sobre la matriz entintada. Con un <strong>Baren japonés</strong> o el reverso de una <strong>cuchara de madera</strong>, realiza frotaciones circulares desde el centro hacia los bordes aplicando presión firme.",
+                                svg: `<svg viewBox="0 0 200 90" class="w-full h-28 mx-auto"><rect x="30" y="45" width="140" height="20" fill="#d97706"/><rect x="35" y="38" width="130" height="5" fill="#f8fafc" stroke="#cbd5e1"/><circle cx="100" cy="28" r="16" fill="#15803d"/><text x="100" y="82" text-anchor="middle" font-size="10" font-weight="bold" fill="#0f172a">Frotado circular con Baren</text></svg>`
+                            },
+                            {
+                                type: "quiz-single",
+                                question: "¿Qué técnica de frotado garantiza una transferencia uniforme con cuchara o baren?",
+                                options: ["Golpear fuertemente el papel", "Movimientos en espiral del centro hacia afuera", "Frotar solo las esquinas"],
+                                correct: 1,
+                                feedback: "¡Correcto! Los movimientos circulares distribuyen la presión sin mover ni arrugar el papel."
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: "mod-5",
+                title: "Módulo 5: Registro y Edición Avanzada",
+                desc: "Marcos de registro, matriz perdida y limpieza.",
+                color: "indigo",
+                lessons: [
+                    {
+                        id: "les-5-1",
+                        title: "Plantilla de Registro de 2 Rectángulos",
+                        steps: [
+                            {
+                                type: "theory",
+                                title: "Alineación Perfecta",
+                                content: "Para lograr márgenes iguales y centrar la estampa, dibuja en un papel base dos rectángulos concéntricos: el <strong>interior para encajar la matriz</strong> y el <strong>exterior para alinear el papel</strong>.",
+                                svg: `<svg viewBox="0 0 200 90" class="w-full h-28 mx-auto"><rect x="20" y="10" width="160" height="70" fill="none" stroke="#6366f1" stroke-width="2" stroke-dasharray="3"/><rect x="50" y="25" width="100" height="40" fill="#f59e0b" opacity="0.8"/><text x="100" y="48" text-anchor="middle" font-size="9" font-weight="bold" fill="white">Matriz</text><text x="100" y="85" text-anchor="middle" font-size="9" font-weight="bold" fill="#6366f1">Límite del Papel</text></svg>`
+                            },
+                            {
+                                type: "quiz-single",
+                                question: "¿Para qué sirve una plantilla o marco de registro?",
+                                options: ["Para secar la tinta", "Para centrar exactamente la estampa en el papel", "Para limpiar la gubia"],
+                                correct: 1,
+                                feedback: "¡Impecable! Un registro preciso es indispensable para tirajes de varias copias iguales."
+                            }
+                        ]
+                    },
+                    {
+                        id: "les-5-2",
+                        title: "Técnica de Matriz Perdida (Reductiva)",
+                        steps: [
+                            {
+                                type: "theory",
+                                title: "Estampa Multicolor con Una Sola Plancha",
+                                content: "En la <strong>matriz perdida</strong> se imprime el primer color claro. Luego se sigue tallando la <em>misma</em> matriz para imprimir el segundo color más oscuro encima, destruyendo progresivamente la matriz.",
+                                svg: `<svg viewBox="0 0 200 90" class="w-full h-28 mx-auto"><rect x="30" y="20" width="60" height="50" fill="#fef08a" stroke="#d97706" stroke-width="2"/><text x="60" y="82" text-anchor="middle" font-size="9" font-weight="bold" fill="#0f172a">1.º Color (Amarillo)</text><rect x="110" y="20" width="60" height="50" fill="#fef08a" stroke="#d97706" stroke-width="2"/><path d="M 120 30 L 160 60" stroke="#dc2626" stroke-width="12"/><text x="140" y="82" text-anchor="middle" font-size="9" font-weight="bold" fill="#0f172a">2.º Color sobrepuesto</text></svg>`
+                            },
+                            {
+                                type: "quiz-single",
+                                question: "¿Cuál es la característica principal de la técnica de linograbado a matriz perdida?",
+                                options: ["Usa 5 matrices diferentes", "Se destruye progresivamente la misma matriz en cada color", "No usa tinta"],
+                                correct: 1,
+                                feedback: "¡Perfecto! Al ir re-tallando la misma plancha entre cada capa de color, la matriz original no se puede reutilizar."
+                            }
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        // --- APP ENGINE STATE & METHODS ---
+        class App {
+            constructor() {
+                this.state = {
+                    xp: 0,
+                    lives: 5,
+                    streak: 1,
+                    completedLessons: []
+                };
+                this.activeLesson = null;
+                this.activeStepIndex = 0;
+                this.selectedAnswer = null;
+
+                this.loadState();
+            }
+
+            init() {
+                this.renderStats();
+                this.renderSerpentinePath();
+                lucide.createIcons();
+            }
+
+            // --- LOCAL STORAGE ---
+            saveState() {
+                localStorage.setItem('linolingo_v2_state', JSON.stringify(this.state));
+            }
+
+            loadState() {
+                const saved = localStorage.getItem('linolingo_v2_state');
+                if (saved) {
+                    try {
+                        this.state = { ...this.state, ...JSON.parse(saved) };
+                    } catch(e){}
+                }
+            }
+
+            renderStats() {
+                document.getElementById('stat-lives').textContent = this.state.lives;
+                document.getElementById('stat-xp').textContent = this.state.xp;
+                document.getElementById('stat-streak').textContent = this.state.streak;
+            }
+
+            // --- DUOLINGO SERPENTINE PATH RENDERER ---
+            renderSerpentinePath() {
+                const container = document.getElementById('serpentine-path-container');
+                container.innerHTML = '';
+
+                // Horizontal offsets for Duolingo wavy effect (percentages)
+                const offsets = [0, 25, 45, 25, 0, -25, -45, -25];
+                let globalNodeIdx = 0;
+                let foundActive = false;
+
+                COURSE_DATA.forEach((mod, modIdx) => {
+                    // Module Section Header
+                    const modHeader = document.createElement('div');
+                    modHeader.className = "text-center my-6 space-y-1 bg-slate-100/80 p-3 rounded-2xl border border-slate-200/80";
+                    modHeader.innerHTML = `
+                        <span class="text-[10px] font-black tracking-widest text-amber-700 uppercase">Módulo ${modIdx + 1}</span>
+                        <h3 class="font-display font-bold text-slate-800 text-base sm:text-lg">${mod.title}</h3>
+                        <p class="text-xs text-slate-500">${mod.desc}</p>
+                    `;
+                    container.appendChild(modHeader);
+
+                    // Render Nodes of module
+                    mod.lessons.forEach((les, lesIdx) => {
+                        const isCompleted = this.state.completedLessons.includes(les.id);
+                        let isCurrent = false;
+
+                        if (!isCompleted && !foundActive) {
+                            isCurrent = true;
+                            foundActive = true;
+                        }
+
+                        const offset = offsets[globalNodeIdx % offsets.length];
+                        globalNodeIdx++;
+
+                        const nodeWrapper = document.createElement('div');
+                        nodeWrapper.className = "flex flex-col items-center justify-center relative my-6 transition-all";
+                        nodeWrapper.style.transform = `translateX(${offset}px)`;
+
+                        let buttonStyles = "";
+                        let iconInside = "";
+
+                        if (isCompleted) {
+                            buttonStyles = "bg-emerald-500 text-white border-b-4 border-emerald-700 hover:bg-emerald-600 shadow-md";
+                            iconInside = `<i data-lucide="check" class="w-7 h-7 stroke-[3]"></i>`;
+                        } else if (isCurrent) {
+                            buttonStyles = "bg-amber-500 text-white border-b-4 border-amber-700 node-active-pulse shadow-lg scale-110";
+                            iconInside = `<i data-lucide="play" class="w-7 h-7 fill-white ml-1"></i>`;
+                        } else {
+                            buttonStyles = "bg-slate-200 text-slate-400 border-b-4 border-slate-300 cursor-not-allowed opacity-80";
+                            iconInside = `<i data-lucide="lock" class="w-6 h-6"></i>`;
+                        }
+
+                        nodeWrapper.innerHTML = `
+                            <button onclick="app.onNodeClick('${les.id}', ${isCurrent || isCompleted})" class="w-16 h-16 sm:w-18 sm:h-18 rounded-full flex items-center justify-center transition-transform active:scale-95 ${buttonStyles}">
+                                ${iconInside}
+                            </button>
+                            <span class="mt-2 text-xs font-bold text-slate-700 max-w-[120px] text-center leading-tight bg-white/80 backdrop-blur px-2 py-0.5 rounded-lg border border-slate-200">${les.title}</span>
+                        `;
+
+                        container.appendChild(nodeWrapper);
+                    });
+                });
+
+                lucide.createIcons();
+            }
+
+            onNodeClick(lessonId, isUnlocked) {
+                if (!isUnlocked) {
+                    sfx.incorrect();
+                    return;
+                }
+                sfx.click();
+                this.startLesson(lessonId);
+            }
+
+            // --- NAVIGATION CONTROL ---
+            showHome() {
+                document.getElementById('view-map').classList.remove('hidden');
+                document.getElementById('view-lesson').classList.add('hidden');
+                this.renderSerpentinePath();
+            }
+
+            confirmExitLesson() {
+                this.toggleModal('modal-exit', true);
+            }
+
+            exitLesson() {
+                this.toggleModal('modal-exit', false);
+                this.activeLesson = null;
+                this.showHome();
+            }
+
+            toggleModal(modalId, show = true) {
+                const el = document.getElementById(modalId);
+                if (show) {
+                    el.classList.remove('hidden');
+                } else {
+                    el.classList.add('hidden');
+                }
+            }
+
+            // --- LESSON ENGINE ---
+            startLesson(lessonId) {
+                let foundLesson = null;
+                COURSE_DATA.forEach(m => {
+                    m.lessons.forEach(l => {
+                        if (l.id === lessonId) foundLesson = l;
+                    });
+                });
+
+                if (!foundLesson) return;
+
+                this.activeLesson = foundLesson;
+                this.activeStepIndex = 0;
+                this.selectedAnswer = null;
+
+                document.getElementById('lesson-lives-count').textContent = this.state.lives;
+                document.getElementById('view-map').classList.add('hidden');
+                document.getElementById('view-lesson').classList.remove('hidden');
+
+                this.renderStep();
+            }
+
+            renderStep() {
+                const step = this.activeLesson.steps[this.activeStepIndex];
+                const totalSteps = this.activeLesson.steps.length;
+                const progressPct = ((this.activeStepIndex + 1) / totalSteps) * 100;
+
+                // Progress Bar & Back Button
+                document.getElementById('lesson-progress-bar').style.width = `${progressPct}%`;
+                const prevBtn = document.getElementById('btn-prev-step');
+                if (this.activeStepIndex > 0) {
+                    prevBtn.classList.remove('hidden');
+                } else {
+                    prevBtn.classList.add('hidden');
+                }
+
+                // Next Button Text
+                const nextText = document.getElementById('btn-next-text');
+                nextText.textContent = (this.activeStepIndex === totalSteps - 1) ? 'Finalizar' : 'Continuar';
+
+                const container = document.getElementById('lesson-content');
+                container.innerHTML = '';
+                this.selectedAnswer = null;
+
+                if (step.type === 'theory') {
+                    container.innerHTML = `
+                        <div class="space-y-4 text-center">
+                            ${step.svg || ''}
+                            <h3 class="font-display text-xl sm:text-2xl font-bold text-slate-800">${step.title}</h3>
+                            <p class="text-slate-600 text-sm sm:text-base leading-relaxed max-w-sm mx-auto">${step.content}</p>
+                        </div>
+                    `;
+                } else if (step.type === 'quiz-single') {
+                    const optionsHtml = step.options.map((opt, idx) => `
+                        <button onclick="app.selectOption(${idx})" id="opt-${idx}" class="w-full text-left p-3.5 sm:p-4 rounded-xl border-2 border-slate-200 hover:border-amber-400 font-bold text-slate-700 text-xs sm:text-sm transition-all flex items-center justify-between">
+                            <span>${opt}</span>
+                            <div class="w-4 h-4 rounded-full border-2 border-slate-300 opt-radio"></div>
+                        </button>
+                    `).join('');
+
+                    container.innerHTML = `
+                        <div class="space-y-3 sm:space-y-4">
+                            <span class="text-[10px] font-black uppercase tracking-widest text-amber-600 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">Pregunta de Evaluación</span>
+                            <h3 class="font-display text-lg sm:text-xl font-bold text-slate-800">${step.question}</h3>
+                            <div class="space-y-2 pt-1">${optionsHtml}</div>
+                            <div id="quiz-feedback" class="hidden p-3 rounded-xl font-bold text-xs sm:text-sm"></div>
+                        </div>
+                    `;
+                }
+
+                lucide.createIcons();
+            }
+
+            selectOption(idx) {
+                const step = this.activeLesson.steps[this.activeStepIndex];
+                if (step.type !== 'quiz-single') return;
+
+                this.selectedAnswer = idx;
+                step.options.forEach((_, i) => {
+                    const btn = document.getElementById(`opt-${i}`);
+                    if (i === idx) {
+                        btn.className = "w-full text-left p-3.5 sm:p-4 rounded-xl border-2 border-amber-500 bg-amber-50 font-bold text-amber-900 text-xs sm:text-sm transition-all flex items-center justify-between shadow-sm";
+                    } else {
+                        btn.className = "w-full text-left p-3.5 sm:p-4 rounded-xl border-2 border-slate-200 font-bold text-slate-700 text-xs sm:text-sm transition-all flex items-center justify-between opacity-50";
+                    }
+                });
+                sfx.click();
+            }
+
+            prevStep() {
+                if (this.activeStepIndex > 0) {
+                    sfx.click();
+                    this.activeStepIndex--;
+                    this.renderStep();
+                }
+            }
+
+            handleNextClick() {
+                const step = this.activeLesson.steps[this.activeStepIndex];
+
+                if (step.type === 'quiz-single') {
+                    if (this.selectedAnswer === null) {
+                        sfx.incorrect();
+                        return;
+                    }
+
+                    const feedbackEl = document.getElementById('quiz-feedback');
+                    if (this.selectedAnswer === step.correct) {
+                        sfx.correct();
+                        feedbackEl.className = "p-3 rounded-xl font-bold text-xs sm:text-sm bg-emerald-100 text-emerald-800 border border-emerald-300";
+                        feedbackEl.textContent = step.feedback;
+                        feedbackEl.classList.remove('hidden');
+
+                        this.state.xp += 15;
+                        this.renderStats();
+
+                        setTimeout(() => this.advanceStep(), 1100);
+                    } else {
+                        sfx.incorrect();
+                        feedbackEl.className = "p-3 rounded-xl font-bold text-xs sm:text-sm bg-red-100 text-red-800 border border-red-300";
+                        feedbackEl.textContent = "Respuesta incorrecta. Revisa la opción y la teoría previa.";
+                        feedbackEl.classList.remove('hidden');
+
+                        if (this.state.lives > 1) {
+                            this.state.lives--;
+                        }
+                        this.renderStats();
+                        this.saveState();
+                        document.getElementById('lesson-lives-count').textContent = this.state.lives;
+                    }
+                    return;
+                }
+
+                sfx.click();
+                this.advanceStep();
+            }
+
+            advanceStep() {
+                if (this.activeStepIndex < this.activeLesson.steps.length - 1) {
+                    this.activeStepIndex++;
+                    this.renderStep();
+                } else {
+                    // Lesson Completed
+                    sfx.victory();
+                    if (!this.state.completedLessons.includes(this.activeLesson.id)) {
+                        this.state.completedLessons.push(this.activeLesson.id);
+                        this.state.xp += 30;
+                    }
+                    this.saveState();
+                    this.renderStats();
+                    this.showHome();
+                }
+            }
+        }
+
+        // Initialize App instance
+        const app = new App();
+        window.onload = () => app.init();
+    </script>
+</body>
+</html>
