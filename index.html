@@ -32,12 +32,11 @@
             font-family: var(--font-display);
         }
 
-        /* Prevent button text wrapping breaking layout */
         button {
             touch-action: manipulation;
         }
 
-        /* Custom Animated Pulse for Active Node */
+        /* Animated Pulse for Active Path Node */
         @keyframes duolingo-pulse {
             0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.4); }
             50% { transform: scale(1.06); box-shadow: 0 0 0 12px rgba(217, 119, 6, 0); }
@@ -47,18 +46,25 @@
             animation: duolingo-pulse 2s infinite ease-in-out;
         }
 
-        /* Entry Animations */
         @keyframes pop {
-            0% { transform: scale(0.95); opacity: 0; }
-            70% { transform: scale(1.02); opacity: 1; }
+            0% { transform: scale(0.96); opacity: 0; }
             100% { transform: scale(1); opacity: 1; }
         }
 
         .animate-pop {
-            animation: pop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            animation: pop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
 
-        /* Custom Scrollbar */
+        /* Feedback Drawer Slide Up Animation */
+        @keyframes slideUp {
+            0% { transform: translateY(100%); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        .animate-slide-up {
+            animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
         ::-webkit-scrollbar {
             width: 6px;
         }
@@ -73,7 +79,7 @@
 </head>
 <body class="bg-slate-50 min-h-screen flex flex-col justify-between overflow-x-hidden">
 
-    <!-- TOP NAV / STATS BAR -->
+    <!-- TOP HEADER / STATS BAR -->
     <header class="sticky top-0 z-30 bg-white/95 backdrop-blur border-b-2 border-slate-200 px-3 sm:px-4 py-2.5 shadow-sm max-w-full">
         <div class="max-w-md mx-auto flex items-center justify-between gap-1.5">
             
@@ -90,25 +96,21 @@
 
             <!-- Stats Bar (Streak, XP, Hearts) -->
             <div class="flex items-center gap-1.5 sm:gap-2.5">
-                <!-- Streak -->
                 <div class="flex items-center gap-1 bg-amber-50 border border-amber-200 px-2 py-1 rounded-full" title="Racha de días">
                     <i data-lucide="flame" class="w-4 h-4 text-orange-500 fill-orange-500"></i>
                     <span id="stat-streak" class="font-extrabold text-xs sm:text-sm text-amber-700">1</span>
                 </div>
 
-                <!-- XP -->
                 <div class="flex items-center gap-1 bg-yellow-50 border border-yellow-200 px-2 py-1 rounded-full" title="Experiencia XP">
                     <i data-lucide="sparkles" class="w-4 h-4 text-amber-500 fill-amber-500"></i>
                     <span id="stat-xp" class="font-extrabold text-xs sm:text-sm text-amber-600">0</span>
                 </div>
 
-                <!-- Hearts / Lives -->
                 <div class="flex items-center gap-1 bg-red-50 border border-red-200 px-2 py-1 rounded-full" title="Vidas">
                     <i data-lucide="heart" class="w-4 h-4 text-red-500 fill-red-500"></i>
                     <span id="stat-lives" class="font-extrabold text-xs sm:text-sm text-red-600">5</span>
                 </div>
 
-                <!-- Info Modal -->
                 <button onclick="app.toggleModal('modal-info', true)" class="p-1.5 rounded-xl border-2 border-slate-200 hover:bg-slate-100 text-slate-600 transition-colors" title="Información y Fuentes">
                     <i data-lucide="info" class="w-4 h-4 sm:w-5 sm:h-5"></i>
                 </button>
@@ -121,33 +123,30 @@
         
         <!-- HOME / DUOLINGO SERPENTINE PATH MAP -->
         <div id="view-map" class="space-y-6">
-            
-            <!-- Banner Header -->
             <div class="bg-gradient-to-br from-amber-600 via-amber-700 to-orange-700 rounded-2xl p-4 sm:p-5 text-white shadow-md relative overflow-hidden">
                 <div class="relative z-10">
-                    <span class="bg-amber-800/60 text-amber-200 text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full border border-amber-500/30">Curso Práctico</span>
+                    <span class="bg-amber-800/60 text-amber-200 text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full border border-amber-500/30">Curso Práctico Extendido</span>
                     <h2 class="font-display text-xl sm:text-2xl font-bold mt-1">Ruta del Linograbador</h2>
-                    <p class="text-amber-100 text-xs mt-1 leading-relaxed">Completa los nodos para dominar matrices, corte, entintado y estampa manual.</p>
+                    <p class="text-amber-100 text-xs mt-1 leading-relaxed">Lecciones exhaustivas para dominar la estampa artística desde cero.</p>
                 </div>
                 <i data-lucide="layers" class="absolute -right-4 -bottom-4 w-24 h-24 text-white/10 transform rotate-12"></i>
             </div>
 
             <!-- Path Container -->
-            <div id="serpentine-path-container" class="relative py-4 space-y-12">
+            <div id="serpentine-path-container" class="relative py-4 space-y-10">
                 <!-- Dynamic Nodes injected by JS -->
             </div>
         </div>
 
         <!-- LESSON ACTIVE VIEW -->
-        <div id="view-lesson" class="hidden min-h-[75vh] flex flex-col justify-between max-w-full">
+        <div id="view-lesson" class="hidden min-h-[78vh] flex flex-col justify-between max-w-full relative pb-28">
             
             <!-- Lesson Header Bar -->
-            <div class="flex items-center gap-3 mb-3">
+            <div class="flex items-center gap-3 mb-2">
                 <button onclick="app.confirmExitLesson()" class="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors" title="Salir de la lección">
                     <i data-lucide="x" class="w-6 h-6"></i>
                 </button>
                 
-                <!-- Progress Bar -->
                 <div class="flex-1 bg-slate-200 h-3.5 rounded-full overflow-hidden">
                     <div id="lesson-progress-bar" class="bg-amber-500 h-full w-0 transition-all duration-300 rounded-full"></div>
                 </div>
@@ -158,23 +157,48 @@
                 </div>
             </div>
 
-            <!-- Lesson Body Slide Content -->
-            <div id="lesson-content" class="flex-1 flex flex-col justify-center my-2 animate-pop">
-                <!-- Slide content dynamically rendered -->
+            <!-- Step Indicator -->
+            <div class="text-right text-[11px] font-black text-amber-700 uppercase tracking-widest px-1" id="step-indicator">
+                Paso 1 de 6
             </div>
 
-            <!-- Lesson Navigation Footer -->
-            <div class="mt-4 pt-3 border-t-2 border-slate-100 flex items-center justify-between gap-3">
+            <!-- Lesson Body Content -->
+            <div id="lesson-content" class="flex-1 flex flex-col justify-center my-2 animate-pop">
+                <!-- Step card rendered by JS -->
+            </div>
+
+            <!-- Lesson Navigation Bar -->
+            <div id="lesson-default-nav" class="mt-4 pt-3 border-t-2 border-slate-200 flex items-center justify-between gap-3">
                 <button id="btn-prev-step" onclick="app.prevStep()" class="hidden px-4 py-3 rounded-xl border-2 border-slate-300 text-slate-600 font-bold hover:bg-slate-100 transition-colors flex items-center gap-1.5">
                     <i data-lucide="arrow-left" class="w-4 h-4"></i>
                     <span class="text-sm">Anterior</span>
                 </button>
 
-                <button id="btn-next-step" onclick="app.handleNextClick()" class="flex-1 py-3.5 rounded-xl bg-amber-600 hover:bg-amber-700 active:scale-[0.99] text-white font-extrabold text-center shadow-md transition-all flex items-center justify-center gap-2">
-                    <span id="btn-next-text" class="text-base">Continuar</span>
+                <button id="btn-main-action" onclick="app.handleMainAction()" class="flex-1 py-3.5 rounded-xl bg-amber-600 hover:bg-amber-700 active:scale-[0.99] text-white font-extrabold text-center shadow-md transition-all flex items-center justify-center gap-2">
+                    <span id="btn-main-text" class="text-base">Continuar</span>
                     <i data-lucide="arrow-right" class="w-5 h-5"></i>
                 </button>
             </div>
+
+            <!-- FEEDBACK BOTTOM DRAWER (Fix 1: Allows reading feedback without auto-closing) -->
+            <div id="feedback-drawer" class="fixed inset-x-0 bottom-0 z-40 bg-white border-t-4 shadow-2xl p-4 sm:p-5 hidden animate-slide-up max-w-md mx-auto rounded-t-2xl">
+                <div class="space-y-3">
+                    <div class="flex items-start gap-3">
+                        <div id="feedback-icon-container" class="w-9 h-9 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                            <!-- Icon injected by JS -->
+                        </div>
+                        <div class="flex-1">
+                            <h4 id="feedback-title" class="font-display font-bold text-base sm:text-lg"></h4>
+                            <p id="feedback-body" class="text-xs sm:text-sm text-slate-600 leading-relaxed mt-0.5"></p>
+                        </div>
+                    </div>
+                    <button id="btn-feedback-continue" onclick="app.advanceStep()" class="w-full py-3.5 rounded-xl text-white font-extrabold text-center shadow-md transition-all text-base flex items-center justify-center gap-2">
+                        <span>Continuar</span>
+                        <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+
         </div>
     </main>
 
@@ -198,7 +222,7 @@
         </div>
     </div>
 
-    <!-- INFO / ABOUT & CREDITS MODAL -->
+    <!-- INFO / ABOUT MODAL -->
     <div id="modal-info" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl p-5 max-w-sm w-full shadow-2xl animate-pop my-4 relative max-h-[85vh] overflow-y-auto space-y-3">
             <button onclick="app.toggleModal('modal-info', false)" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
@@ -216,7 +240,7 @@
             </div>
 
             <div class="space-y-3 text-xs text-slate-600 leading-relaxed border-t border-slate-100 pt-3">
-                <p><strong>LinoLingo</strong> es una plataforma interactiva gamificada estructurada para guiar al estudiante desde la teoría de materiales hasta la estampa artística final.</p>
+                <p><strong>LinoLingo</strong> es una plataforma interactiva gamificada para aprender la técnica milenaria del grabado en linóleo y polímeros.</p>
                 
                 <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wider text-amber-800">🎯 Propuesta Pedagógica:</h4>
                 <ul class="list-disc pl-4 space-y-1">
@@ -237,9 +261,9 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT APPLICATION LOGIC -->
+    <!-- JAVASCRIPT LOGIC -->
     <script>
-        // --- SYNTHESIZED WEB AUDIO SOUNDS ---
+        // --- SYNTHESIZED AUDIO SOUNDS ---
         class SoundFX {
             constructor() {
                 this.ctx = null;
@@ -283,68 +307,145 @@
         }
         const sfx = new SoundFX();
 
-        // --- COMPREHENSIVE COURSE CURRICULUM (5 MODULES) ---
+        // --- EXPANDED 3X CURRICULUM (6 TO 8 DETAILED STEPS PER LESSON) ---
         const COURSE_DATA = [
             {
                 id: "mod-1",
-                title: "Módulo 1: Insumos y Matrices",
-                desc: "Planchas, gubias, tintas, rodillos y papeles.",
-                color: "amber",
+                title: "Módulo 1: Insumos, Gubias y Matrices",
+                desc: "Anatomía de herramientas, química de tintas y selección de papel.",
                 lessons: [
                     {
                         id: "les-1-1",
-                        title: "Tipos de Matrices (Linóleo vs Softcut)",
+                        title: "Anatomía de las Matrices de Grabado",
                         steps: [
                             {
                                 type: "theory",
-                                title: "Linóleo Tradicional vs Sintéticos",
-                                content: "El <strong>linóleo tradicional</strong> se compone de aceite de linaza, harina de madera y resinas sobre arpillera/yute. Es firme y permite líneas muy finas. El <strong>Softcut/Vinilo</strong> es más blando, ideal para principiantes pero menos preciso en detalles minúsculos.",
-                                svg: `<svg viewBox="0 0 200 100" class="w-full h-32 mx-auto"><rect x="20" y="30" width="70" height="50" rx="4" fill="#d97706"/><rect x="20" y="70" width="70" height="10" fill="#78350f"/><text x="55" y="55" text-anchor="middle" font-size="10" font-weight="bold" fill="white">Linóleo</text><rect x="110" y="30" width="70" height="50" rx="4" fill="#38bdf8"/><text x="145" y="55" text-anchor="middle" font-size="10" font-weight="bold" fill="white">Softcut</text></svg>`
+                                title: "¿Qué es el Linóleo Tradicional?",
+                                content: "El <strong>linóleo Battleship</strong> está compuesto por aceite de linaza oxidado, resina de pino, polvo de corcho y harina de madera prensados sobre una arpillera o yute. Su consistencia es firme, firme para detallar trazos milimétricos.",
+                                svg: `<svg viewBox="0 0 240 100" class="w-full h-32 mx-auto"><rect x="10" y="20" width="220" height="50" rx="6" fill="#d97706"/><rect x="10" y="70" width="220" height="12" fill="#78350f"/><text x="120" y="50" text-anchor="middle" font-size="12" font-weight="extrabold" fill="white">Capa de Linóleo (Aceite + Madera)</text><text x="120" y="79" text-anchor="middle" font-size="9" font-weight="bold" fill="#fef3c7">Base de Malla de Yute / Arpillera</text></svg>`
+                            },
+                            {
+                                type: "theory",
+                                title: "Polímeros Sintéticos (Softcut / Vinyl)",
+                                content: "Los bloques de <strong>Softcut o vinilo flexible</strong> son polímeros de caucho sintético. No tienen base de yute ni sentido de veta. Son muy suaves de tallar, pero pueden deformarse si se aplica demasiada presión.",
+                                svg: `<svg viewBox="0 0 240 90" class="w-full h-28 mx-auto"><rect x="20" y="20" width="200" height="50" rx="8" fill="#38bdf8"/><text x="120" y="50" text-anchor="middle" font-size="12" font-weight="extrabold" fill="white">Softcut / Vinilo Flexible (Sin yute)</text></svg>`
                             },
                             {
                                 type: "quiz-single",
-                                question: "¿Cuál es el componente orgánico principal del linóleo tradicional?",
-                                options: ["Plástico PVC", "Aceite de linaza y harina de madera", "Goma arábiga"],
+                                question: "¿Qué soporte orgánico le otorga firmeza al linóleo tradicional en su cara posterior?",
+                                options: ["Malla de yute / arpillera", "Lámina de plástico PVC", "Cartón prensado"],
+                                correct: 0,
+                                feedback: "¡Correcto! La arpillera de yute vegetal actúa como estructura resistente sobre la cual se fragua la masa de aceite de linaza."
+                            },
+                            {
+                                type: "theory",
+                                title: "Cuidado y Acondicionamiento de la Matriz",
+                                content: "Si el linóleo tradicional se siente muy duro o quebradizo por el frío, puedes entibiarlo unos segundos con un secador de pelo o apoyando tus manos. Esto suaviza la masa de linaza facilitando el paso de la gubia.",
+                                svg: `<svg viewBox="0 0 200 80" class="w-full h-24 mx-auto"><rect x="30" y="40" width="140" height="30" rx="4" fill="#d97706"/><path d="M 60 10 Q 70 25 60 35 M 100 10 Q 110 25 100 35 M 140 10 Q 150 25 140 35" stroke="#f59e0b" stroke-width="3" fill="none"/><text x="100" y="60" text-anchor="middle" font-size="10" font-weight="bold" fill="white">Calor suave = Talla fluida</text></svg>`
+                            },
+                            {
+                                type: "quiz-single",
+                                question: "¿Qué sucede si intentas tallar un linóleo tradicional demasiado frío y rígido?",
+                                options: ["Se reblanda solo al tocarlo", "Las esquinas se astillan y cuesta controlar el trazo", "Se borra la tinta"],
                                 correct: 1,
-                                feedback: "¡Exacto! La linaza industrializada endurecida con serrín otorga la consistencia perfecta para la talla."
+                                feedback: "¡Exacto! El aceite de linaza endurecido con el frío se vuelve quebradizo. Entibiarlo ligeramente devuelve la fluidez al corte."
+                            },
+                            {
+                                type: "quiz-single",
+                                question: "¿Cuál es la principal desventaja de los bloques sintéticos Softcut para trabajos avanzados?",
+                                options: ["No aceptan tinta", "Se deforman ante presiones altas perdiendo precisión fina", "Son demasiado duros"],
+                                correct: 1,
+                                feedback: "¡Muy bien! Al ser tan elásticos, las líneas hiperfinas pueden aplastarse si usas una prensa o baren con mucha fuerza."
                             }
                         ]
                     },
                     {
                         id: "les-1-2",
-                        title: "Gubias V y U",
+                        title: "Perfiles de Gubia V y U (Anatomía del Corte)",
                         steps: [
                             {
                                 type: "theory",
-                                title: "Perfiles de Corte: V vs U",
-                                content: "Las gubias en <strong>'V'</strong> cortan un surco limpio y angosto; son las indicadas para delinear y hacer detalles. Las gubias en <strong>'U'</strong> extraen una franja ancha y plana, perfectas para vaciar grandes áreas de fondo.",
-                                svg: `<svg viewBox="0 0 200 90" class="w-full h-28 mx-auto"><path d="M 30 20 L 60 70 L 90 20" fill="none" stroke="#dc2626" stroke-width="8" stroke-linecap="round"/><text x="60" y="85" text-anchor="middle" font-size="11" font-weight="bold" fill="#dc2626">Gubia en V (Perfilado)</text><path d="M 120 20 Q 150 85 180 20" fill="none" stroke="#2563eb" stroke-width="8" stroke-linecap="round"/><text x="150" y="85" text-anchor="middle" font-size="11" font-weight="bold" fill="#2563eb">Gubia en U (Vacioso)</text></svg>`
+                                title: "Gubias en V vs Gubias en U (Fix de Visualización)",
+                                content: "A diferencia de la versión previa, aquí apreciamos los contornos aislados. La <strong>Gubia en V</strong> forma un corte en cuña cerrada para perfiles nítidos. La <strong>Gubia en U</strong> deja un canal redondeado para extraer franjas de volumen.",
+                                // Fix 2: Redesigned SVG preventing label overlaps
+                                svg: `<div class="flex justify-center items-center gap-6 my-2 bg-slate-100 p-4 rounded-xl border border-slate-200">
+                                    <div class="text-center">
+                                        <svg width="80" height="60" viewBox="0 0 80 60"><path d="M 15 10 L 40 50 L 65 10" fill="none" stroke="#dc2626" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                        <span class="block mt-2 font-black text-xs text-red-600">Gubia en V</span>
+                                        <span class="block text-[10px] font-bold text-slate-500">(Perfilado fino)</span>
+                                    </div>
+                                    <div class="h-16 w-0.5 bg-slate-300"></div>
+                                    <div class="text-center">
+                                        <svg width="80" height="60" viewBox="0 0 80 60"><path d="M 15 10 Q 40 60 65 10" fill="none" stroke="#2563eb" stroke-width="8" stroke-linecap="round"/></svg>
+                                        <span class="block mt-2 font-black text-xs text-blue-600">Gubia en U</span>
+                                        <span class="block text-[10px] font-bold text-slate-500">(Vacioso amplio)</span>
+                                    </div>
+                                </div>`
+                            },
+                            {
+                                type: "theory",
+                                title: "Micrometraje y Numeración",
+                                content: "Las gubias vienen catalogadas por números. Un perfil <strong>V de 0.5mm a 1mm</strong> se usa para tramas de grabado antiguo o pestañas de ojos. Una <strong>U de 3mm a 5mm</strong> despeja fondos rápidamente.",
+                                svg: `<svg viewBox="0 0 200 70" class="w-full h-20 mx-auto"><line x1="20" y1="35" x2="180" y2="35" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="4"/><circle cx="50" cy="35" r="4" fill="#dc2626"/><text x="50" y="55" text-anchor="middle" font-size="9" font-weight="bold" fill="#dc2626">0.5mm (Micro V)</text><circle cx="150" cy="35" r="14" fill="#2563eb"/><text x="150" y="60" text-anchor="middle" font-size="9" font-weight="bold" fill="#2563eb">5mm (U Ancha)</text></svg>`
                             },
                             {
                                 type: "quiz-single",
-                                question: "¿Qué gubia debes utilizar para vaciar el fondo amplio de una matriz?",
-                                options: ["Gubia en V delgada", "Gubia en U ancha", "Bisturí recto"],
+                                question: "Vas a realizar los cabellos muy finos del retrato de un personaje, ¿qué gubia debes elegir?",
+                                options: ["Gubia en V micro (0.5mm - 1mm)", "Gubia en U grande (5mm)", "Cúter plano de oficina"],
+                                correct: 0,
+                                feedback: "¡Excelente! La gubia V delgada genera líneas finas y afiladas necesarias para texturas detalladas."
+                            },
+                            {
+                                type: "theory",
+                                title: "El 'Hombro' del Surco de Corte",
+                                content: "Un corte limpio no debe ser excesivamente profundo. Si profundizas demasiado con una V, debilitas la pared del dibujo causando que el 'hombro' de linóleo colapse por la presión de la tinta.",
+                                svg: `<svg viewBox="0 0 200 80" class="w-full h-24 mx-auto"><path d="M 20 60 L 70 60 L 85 20 L 100 60 L 180 60" fill="none" stroke="#d97706" stroke-width="6"/><text x="85" y="75" text-anchor="middle" font-size="10" font-weight="bold" fill="#0f172a">Hombro estable (Corte seguro)</text></svg>`
+                            },
+                            {
+                                type: "quiz-single",
+                                question: "¿Qué ocurre si haces un surco de corte extremadamente profundo y angosto?",
+                                options: ["La matriz dura más tiempo", "Las paredes del trazo se debilitan y pueden romperse al entintar", "Aparece más brillo"],
                                 correct: 1,
-                                feedback: "¡Correcto! La gubia en U retira gran volumen de material rápidamente sin dejar marcas profundas."
+                                feedback: "¡Exacto! El corte debe retirar superficie sin socavar los cimientos ni debilitar los bordes colindantes."
+                            },
+                            {
+                                type: "quiz-single",
+                                question: "¿Qué gubia mantendrá el fondo limpio de crestas o manchas no deseadas al estampar?",
+                                options: ["Gubia en V delgada", "Gubia en U redonda de base plana", "Formón recto de carpintería"],
+                                correct: 1,
+                                feedback: "¡Muy bien! La U deja un fondo curvo suave que no atrapa tinta residual por las esquinas."
                             }
                         ]
                     },
                     {
                         id: "les-1-3",
-                        title: "Tintas y Papeles de Estampa",
+                        title: "Tintas Caligo y Papeles de Fibra",
                         steps: [
                             {
                                 type: "theory",
-                                title: "Tintas Caligo y Papel Japonés",
-                                content: "Las tintas <strong>Caligo Safe Wash</strong> son a base de aceite soluble pero se limpian solo con agua y jabón sin solventes. Para la estampa manual se recomiendan papeles livianos de fibra larga como el <strong>Kozo o Kitakata</strong> (30-90 gsm).",
-                                svg: `<svg viewBox="0 0 200 90" class="w-full h-28 mx-auto"><rect x="30" y="20" width="40" height="50" rx="4" fill="#0f172a"/><path d="M 30 40 L 70 40" stroke="#f59e0b" stroke-width="4"/><text x="50" y="82" text-anchor="middle" font-size="10" font-weight="bold" fill="#0f172a">Tinta Caligo</text><rect x="110" y="15" width="60" height="60" fill="#fff" stroke="#cbd5e1" stroke-width="2"/><line x1="120" y1="25" x2="160" y2="25" stroke="#e2e8f0" stroke-width="3"/><text x="140" y="88" text-anchor="middle" font-size="10" font-weight="bold" fill="#0f172a">Papel Kozo</text></svg>`
+                                title: "Química de Tintas: Caligo Safe Wash",
+                                content: "Las tintas <strong>Caligo Safe Wash</strong> contienen pigmentos profesionales suspendidos en aceites polimerizados que reaccionan con emulsionantes ecológicos. Ofrecen la viscosidad del óleo tradicional pero se remueven con agua y jabón líquido.",
+                                svg: `<svg viewBox="0 0 200 80" class="w-full h-24 mx-auto"><rect x="40" y="15" width="40" height="50" rx="6" fill="#1e293b"/><text x="60" y="45" text-anchor="middle" font-size="9" font-weight="extrabold" fill="#f59e0b">ÓLEO</text><text x="100" y="45" font-size="16" font-weight="black" fill="#0f172a">+</text><rect x="120" y="15" width="40" height="50" rx="6" fill="#0284c7"/><text x="140" y="45" text-anchor="middle" font-size="9" font-weight="extrabold" fill="white">AGUA</text></svg>`
+                            },
+                            {
+                                type: "theory",
+                                title: "Gramaje y Tipo de Papel (GSM)",
+                                content: "Para la estampa manual con baren o cuchara, se buscan papeles de **gramaje bajo o medio (30 a 120 gsm)** de fibra larga como el <strong>Kozo, Kitakata o Simili Japonés</strong>. Papeles acuarela muy gruesos (300 gsm) requieren tórculo o prensa pesada.",
+                                svg: `<svg viewBox="0 0 200 80" class="w-full h-24 mx-auto"><rect x="30" y="20" width="60" height="45" fill="#ffffff" stroke="#94a3b8" stroke-width="2" rx="2"/><text x="60" y="45" text-anchor="middle" font-size="9" font-weight="extrabold" fill="#1e293b">Kozo (45 gsm)</text><rect x="110" y="20" width="60" height="45" fill="#f8fafc" stroke="#475569" stroke-width="4" rx="2"/><text x="140" y="45" text-anchor="middle" font-size="9" font-weight="extrabold" fill="#1e293b">Fabriano (300 gsm)</text></svg>`
                             },
                             {
                                 type: "quiz-single",
-                                question: "¿Qué ventaja principal ofrecen las tintas tipo Caligo Safe Wash?",
-                                options: ["Secan en 2 segundos", "Tienen base de aceite pero se limpian con agua", "No necesitan rodillo"],
+                                question: "¿Por qué se desaconseja usar un papel de 300 gsm (muy grueso) para frotado manual con baren?",
+                                options: ["Porque se rompe con el agua", "Porque requiere una presión gigantesca que la mano no puede ejercer", "Porque la tinta no se adhiere"],
                                 correct: 1,
-                                feedback: "¡Excelente! Brindan la calidad y viscosidad del aceite pero facilitan la limpieza ecológica."
+                                feedback: "¡Correcto! Los papeles gruesos necesitan la enorme presión de una prensa metálica o tórculo para penetrar en el relieve."
+                            },
+                            {
+                                type: "quiz-single",
+                                question: "¿Cuál es el método ecológico correcto para limpiar tintas Caligo Safe Wash de la mesa?",
+                                options: ["Usar solventes tóxicos como aguarrás o thínner", "Aplicar unas gotas de jabón líquido de cocina, emulsionar y trapear con paño húmedo", "Esperar 3 días a que se seque"],
+                                correct: 1,
+                                feedback: "¡Impecable! Unas gotas de detergente rompen los aceites modificados sin emitir vapores nocivos."
                             }
                         ]
                     }
@@ -352,45 +453,76 @@
             },
             {
                 id: "mod-2",
-                title: "Módulo 2: Dibujo y Transferencia",
-                desc: "Efecto espejo, calco e inversión de tonos.",
-                color: "orange",
+                title: "Módulo 2: Dibujo y Transferencia Espejo",
+                desc: "Inversión de imagen, teñido previo y métodos de calco.",
                 lessons: [
                     {
                         id: "les-2-1",
-                        title: "Imagen Especular y Matriz Invertida",
+                        title: "El Principio del Reflejo Especular",
                         steps: [
                             {
                                 type: "theory",
-                                title: "Inversión Izquierda-Derecha",
-                                content: "Toda imagen estampada se imprime reflejada. Si tu diseño incluye letras o números, <strong>debes invertirlos en espejo</strong> antes de pasarlos a la matriz.",
-                                svg: `<svg viewBox="0 0 200 90" class="w-full h-28 mx-auto"><text x="50" y="60" font-size="48" font-weight="extrabold" fill="#d97706">B</text><text x="150" y="60" font-size="48" font-weight="extrabold" fill="#0f172a" transform="scale(-1,1) translate(-200,0)">B</text><path d="M 95 20 L 95 70" stroke="#cbd5e1" stroke-dasharray="4"/></svg>`
+                                title: "Entendiendo el Reflejo de la Matriz",
+                                content: "El papel actúa como un sello. Todo lo que esté a la derecha en tu plancha de linóleo aparecerá a la izquierda en la hoja final imprimida.",
+                                svg: `<svg viewBox="0 0 220 90" class="w-full h-28 mx-auto"><text x="60" y="65" font-size="52" font-weight="black" fill="#d97706">A</text><path d="M 110 15 L 110 75" stroke="#94a3b8" stroke-dasharray="4" stroke-width="2"/><text x="160" y="65" font-size="52" font-weight="black" fill="#0f172a" transform="scale(-1,1) translate(-320,0)">A</text></svg>`
+                            },
+                            {
+                                type: "theory",
+                                title: "El Desafío de la Tipografía y Firmas",
+                                content: "Si diseñas un cartel con letras o tu firma de autor, <strong>debes transferirlo obligatoriamente dado vuelta en espejo</strong>. De lo contrario, las letras quedarán al revés e ilegibles.",
+                                svg: `<svg viewBox="0 0 200 70" class="w-full h-20 mx-auto"><rect x="10" y="15" width="80" height="40" fill="#f1f5f9" stroke="#cbd5e1" rx="4"/><text x="50" y="42" font-size="16" font-weight="extrabold" fill="#dc2626" text-anchor="middle" transform="scale(-1,1) translate(-100,0)">LINO</text><text x="50" y="68" font-size="9" font-weight="bold" fill="#475569" text-anchor="middle">En Matriz (Invertido)</text><rect x="110" y="15" width="80" height="40" fill="#fef3c7" stroke="#f59e0b" rx="4"/><text x="150" y="42" font-size="16" font-weight="extrabold" fill="#16a34a" text-anchor="middle">LINO</text><text x="150" y="68" font-size="9" font-weight="bold" fill="#475569" text-anchor="middle">En Estampa (Legible)</text></svg>`
                             },
                             {
                                 type: "quiz-single",
-                                question: "Si tu diseño matriz tiene una firma legible de izquierda a derecha, ¿cómo aparecerá en el papel?",
-                                options: ["Exactamente igual", "Invertida al revés (efecto espejo)", "Borrosa"],
+                                question: "Escribes la palabra 'ARTE' correctamente de izquierda a derecha directamente sobre la matriz. ¿Cómo saldrá en el papel?",
+                                options: ["Legible como 'ARTE'", "Invertida como en un espejo (ilegible)", "Transparente"],
                                 correct: 1,
-                                feedback: "¡Exacto! Todo lo grabado en la matriz se invierte al estampar."
+                                feedback: "¡Exacto! Para que salga legible debiste haber dibújala al revés sobre la plancha."
+                            },
+                            {
+                                type: "theory",
+                                title: "Transferencia con Papel Pass-through / Grafito",
+                                content: "Dibuja en un papel vegetal o mantequilla, da vuelta el papel para voltear la imagen, frota la parte posterior con lápiz 6B de grafito y repasa las líneas sobre el linóleo.",
+                                svg: `<svg viewBox="0 0 200 70" class="w-full h-20 mx-auto"><rect x="40" y="10" width="120" height="50" fill="#f8fafc" stroke="#64748b" stroke-dasharray="3" rx="4"/><path d="M 60 35 L 140 35" stroke="#2563eb" stroke-width="4"/><text x="100" y="48" font-size="9" font-weight="bold" fill="#1e293b" text-anchor="middle">Capa de Grafito Reversada</text></svg>`
+                            },
+                            {
+                                type: "quiz-single",
+                                question: "¿Cuál es el truco infalible para no olvidar invertir la imagen antes de calcar?",
+                                options: ["Dibujar con la mano izquierda", "Usar papel vegetal transparente y darlo vuelta antes de transferir", "No usar dibujo previo"],
+                                correct: 1,
+                                feedback: "¡Muy bien! Voltear el papel vegetal garantiza matemáticamente el reflejo exacto."
                             }
                         ]
                     },
                     {
                         id: "les-2-2",
-                        title: "Métodos de Transferencia y Tinta China",
+                        title: "Teñido Previo y Tintas de Visualización",
                         steps: [
                             {
                                 type: "theory",
-                                title: "Entintado Prevencional de la Plancha",
-                                content: "Aplica una capa muy tenue de <strong>tinta china teñida o marcador permanente</strong> sobre el linóleo antes de tallar. Al cortar con la gubia, el contraste entre la superficie teñida y el linóleo claro revelará tus trazos al instante.",
-                                svg: `<svg viewBox="0 0 200 80" class="w-full h-24 mx-auto"><rect x="20" y="20" width="160" height="40" fill="#334155" rx="4"/><path d="M 40 40 L 100 40" stroke="#fef08a" stroke-width="6" stroke-linecap="round"/><text x="100" y="75" text-anchor="middle" font-size="10" font-weight="bold" fill="#475569">Corte expuesto (contraste alto)</text></svg>`
+                                title: "El Problema del Linóleo Virgen",
+                                content: "El linóleo nuevo tiene un color café uniforme. Al tallar sin teñir, cuesta mucho distinguir dónde ya pasó la gubia y dónde falta por cortar.",
+                                svg: `<svg viewBox="0 0 200 70" class="w-full h-20 mx-auto"><rect x="30" y="15" width="140" height="40" fill="#b45309" rx="4"/><text x="100" y="40" font-size="10" font-weight="bold" fill="#fef3c7" text-anchor="middle">Sin Contraste (Difícil distinguir)</text></svg>`
+                            },
+                            {
+                                type: "theory",
+                                title: "Teñido con Tinta China o Marcador Permanente",
+                                content: "Antes de cortar, pasa una pátina diluida de <strong>Tinta China negra o marcador rojo</strong> sobre la matriz. Cuando la gubia retire el linóleo, el fondo claro expuesto resaltará bruscamente contra el tinte superficial.",
+                                svg: `<svg viewBox="0 0 200 80" class="w-full h-24 mx-auto"><rect x="30" y="20" width="140" height="40" fill="#1e293b" rx="4"/><path d="M 50 40 L 150 40" stroke="#fef08a" stroke-width="8" stroke-linecap="round"/><text x="100" y="75" font-size="10" font-weight="bold" fill="#0f172a" text-anchor="middle">Corte expuesto brillante</text></svg>`
                             },
                             {
                                 type: "quiz-single",
-                                question: "¿Para qué sirve teñir la superficie del linóleo antes de comenzar a cortar?",
-                                options: ["Para impermeabilizar", "Para visualizar claramente qué zonas se han tallado", "Para ablandar el linóleo"],
+                                question: "¿Qué color se expone cuando la gubia retira una viruta de un linóleo previamente teñido de negro?",
+                                options: ["Negro brillante", "El color claro natural del interior del linóleo", "Verde fluorescente"],
                                 correct: 1,
-                                feedback: "¡Perfecto! El contraste visual ayuda a evitar errores de corte no deseados."
+                                feedback: "¡Correcto! El contraste inmediato te permite 'ver' la estampa final mientras estás tallando."
+                            },
+                            {
+                                type: "quiz-single",
+                                question: "¿Por qué se debe fijar el dibujo de grafito con tinta impermeable antes de comenzar a cortar?",
+                                options: ["Para que el linóleo huela bien", "Para evitar que la mano borre las líneas de lápiz con el roce al tallar", "Para endurecer la gubia"],
+                                correct: 1,
+                                feedback: "¡Así es! El roce continuo de las manos al tallar borra el lápiz suave si no está fijado con tinta o plumón."
                             }
                         ]
                     }
@@ -398,45 +530,70 @@
             },
             {
                 id: "mod-3",
-                title: "Módulo 3: Técnica de Talla y Seguridad",
-                desc: "Posición de manos, ángulos de corte y control.",
-                color: "red",
+                title: "Módulo 3: Técnica de Tallado y Bioseguridad",
+                desc: "Anclaje, dirección del corte, ángulos y prevención de cortes.",
                 lessons: [
                     {
                         id: "les-3-1",
-                        title: "La Regla de la Mano Libre",
+                        title: "La Bioseguridad y la Regla de Oro",
                         steps: [
                             {
                                 type: "theory",
-                                title: "Bioseguridad en el Taller",
-                                content: "<strong>REGLA DE ORO:</strong> Jamás ubiques la mano de apoyo por delante de la dirección de empuje de la gubia. Utiliza siempre un <strong>tope de banco (topetón)</strong> para fijar la matriz.",
-                                svg: `<svg viewBox="0 0 200 90" class="w-full h-28 mx-auto"><path d="M 30 45 L 120 45" stroke="#16a34a" stroke-width="8" stroke-linecap="round" marker-end="url(#arrow)"/><circle cx="160" cy="45" r="16" fill="#ef4444"/><text x="160" y="51" text-anchor="middle" fill="white" font-weight="black" font-size="16">X</text><text x="100" y="80" text-anchor="middle" font-size="10" font-weight="bold" fill="#0f172a">Talla alejada de tu mano</text></svg>`
+                                title: "Prevención Estricta de Accidentes",
+                                content: "Las gubias son herramientas afiladas que pueden causar cortes profundos. La norma suprema de seguridad es: <strong>NUNCA coloques la mano de apoyo por delante de la trayectoria de la gubia</strong>.",
+                                svg: `<svg viewBox="0 0 200 90" class="w-full h-28 mx-auto"><path d="M 20 45 L 120 45" stroke="#16a34a" stroke-width="8" stroke-linecap="round"/><circle cx="165" cy="45" r="18" fill="#dc2626"/><text x="165" y="52" text-anchor="middle" font-size="18" font-weight="black" fill="white">X</text><text x="100" y="82" font-size="10" font-weight="bold" fill="#0f172a" text-anchor="middle">Avance lejos de tu mano de apoyo</text></svg>`
+                            },
+                            {
+                                type: "theory",
+                                title: "Uso del Tope de Banco (Topetón)",
+                                content: "Un **tope de banco o estaca de madera** se prensa a la mesa de trabajo. Traba la matriz contra el tope para que no se deslice sin necesidad de sujetarla con la mano expuesta.",
+                                svg: `<svg viewBox="0 0 200 80" class="w-full h-24 mx-auto"><rect x="10" y="60" width="180" height="15" fill="#78350f"/><rect x="50" y="30" width="100" height="30" fill="#d97706"/><rect x="150" y="20" width="20" height="40" fill="#451a03"/><text x="100" y="48" font-size="10" font-weight="bold" fill="white" text-anchor="middle">Matriz trabada</text></svg>`
                             },
                             {
                                 type: "quiz-single",
-                                question: "¿Dónde debe posicionarse la mano que sostiene la matriz durante la talla?",
-                                options: ["Delante del avance de la gubia", "Siempre detrás de la trayectoria de corte", "Sobre la cuchilla de la gubia"],
+                                question: "¿Dónde debe posicionarse la mano que sostiene la matriz de linóleo durante el corte?",
+                                options: ["Justo en frente de la gubia", "Siempre por detrás de la mano que impulsa la gubia", "Debajo de la mesa"],
                                 correct: 1,
-                                feedback: "¡Respuesta vital! Mantener la mano atrás previene heridas graves si la gubia resbala."
+                                feedback: "¡Vital! Si la gubia resbala inesperadamente por un trozo duro, avanzará libremente en el aire sin lastimarte."
+                            },
+                            {
+                                type: "quiz-single",
+                                question: "¿Cuál es la función del 'tope de banco' (topetón) en el taller de grabado?",
+                                options: ["Secar la tinta más rápido", "Inmovilizar la matriz para no tener que sujetarla en la zona de peligro de corte", "Afilar la gubia"],
+                                correct: 1,
+                                feedback: "¡Excelente! Trabarse firmemente en el tope evita que la matriz resbale por la mesa."
                             }
                         ]
                     },
                     {
                         id: "les-3-2",
-                        title: "Ángulo de Corte a 30°",
+                        title: "Ángulo de Inclinación y Giro de la Matriz",
                         steps: [
                             {
                                 type: "theory",
-                                title: "Inclinación Precisa de la Cuchilla",
-                                content: "Sostén la gubia en un ángulo aproximado de <strong>30° respecto a la plancha</strong>. Si el ángulo es muy vertical perforarás la tela de yute; si es muy plano la gubia resbalará por la superficie.",
-                                svg: `<svg viewBox="0 0 200 80" class="w-full h-24 mx-auto"><rect x="20" y="50" width="160" height="20" fill="#d97706"/><line x1="40" y1="50" x2="110" y2="20" stroke="#0f172a" stroke-width="6" stroke-linecap="round"/><path d="M 60 50 A 20 20 0 0 0 75 36" fill="none" stroke="#ef4444" stroke-width="2"/><text x="85" y="45" font-size="10" font-weight="bold" fill="#ef4444">30°</text></svg>`
+                                title: "El Ángulo Óptimo: 30 Grados",
+                                content: "Inclina la gubia aproximadamente a <strong>30° respecto a la plancha</strong>. Si el ángulo es muy empinado perforarás la malla inferior; si es muy plano, la cuchilla resbalará rayando la superficie.",
+                                svg: `<svg viewBox="0 0 200 80" class="w-full h-24 mx-auto"><rect x="20" y="55" width="160" height="15" fill="#d97706"/><line x1="40" y1="55" x2="110" y2="25" stroke="#0f172a" stroke-width="6" stroke-linecap="round"/><path d="M 60 55 A 20 20 0 0 0 75 40" fill="none" stroke="#dc2626" stroke-width="2"/><text x="85" y="48" font-size="11" font-weight="bold" fill="#dc2626">30°</text></svg>`
+                            },
+                            {
+                                type: "theory",
+                                title: "Girar la Matriz, NO la Muñeca",
+                                content: "Al tallar curvas o círculos, **mantén la mano de la gubia recta y gira la matriz de linóleo sobre la mesa**. Forzar la muñeca en ángulos extraños causa pérdida de control y fatiga.",
+                                svg: `<svg viewBox="0 0 200 80" class="w-full h-24 mx-auto"><rect x="60" y="20" width="80" height="50" rx="4" fill="#d97706"/><path d="M 100 10 A 35 35 0 0 1 140 40" stroke="#2563eb" stroke-width="3" fill="none" marker-end="url(#arrow)"/><text x="100" y="50" text-anchor="middle" font-size="9" font-weight="bold" fill="white">Gira el bloque</text></svg>`
                             },
                             {
                                 type: "quiz-single",
-                                question: "¿Qué ocurre si tallas con un ángulo demasiado empinado (ej. 70°)?",
-                                options: ["El corte queda perfecto", "Atraviesas y rompes la base de yute de la matriz", "La tinta se corre"],
+                                question: "Necesitas tallar una curva o círculo cerrado en tu diseño. ¿Qué es lo correcto?",
+                                options: ["Retorcer la muñeca hacia atrás sin mover la matriz", "Rotar progresivamente la matriz sobre la mesa mientras mantienes la mano recta", "Usar una tijera"],
                                 correct: 1,
-                                feedback: "¡Así es! Un ángulo muy inclinado daña la matriz irreversiblemente."
+                                feedback: "¡Perfecto! Girar el bloque mantiene la gubia en dirección siempre segura alejándose de tu cuerpo."
+                            },
+                            {
+                                type: "quiz-single",
+                                question: "¿Qué sucede si entierras la gubia a un ángulo vertical de 70° o más?",
+                                options: ["Logras un relieve perfecto", "Atraviesas el yute o rompes la punta de la gubia", "Se tiñe solo"],
+                                correct: 1,
+                                feedback: "¡Correcto! Enterrar la herramienta daña la matriz y puede partir la punta templada del acero."
                             }
                         ]
                     }
@@ -445,44 +602,69 @@
             {
                 id: "mod-4",
                 title: "Módulo 4: Entintado y Estampa Manual",
-                desc: "Estirado de tinta, rodillo, baren y presión.",
-                color: "emerald",
+                desc: "Carga de rodillo, textura de piel de naranja y técnica de frotado.",
                 lessons: [
                     {
                         id: "les-4-1",
-                        title: "Carga de Tinta y Sonido de Velcro",
+                        title: "Carga de Tinta y Diagnóstico del Rodillo",
                         steps: [
                             {
                                 type: "theory",
-                                title: "Textura 'Piel de Naranja'",
-                                content: "Aplica una pequeña gota de tinta sobre un vidrio. Pasa el rodillo alternando direcciones horizontal y vertical hasta lograr un microrrelieve uniforme y escuchar un <strong>sonido pegajoso suave (similar a velcro)</strong>.",
-                                svg: `<svg viewBox="0 0 200 90" class="w-full h-28 mx-auto"><rect x="50" y="25" width="100" height="25" rx="12" fill="#1e293b"/><rect x="90" y="50" width="20" height="35" fill="#64748b"/><text x="100" y="18" text-anchor="middle" font-size="10" font-weight="bold" fill="#16a34a">Capa delgada con micro-textura</text></svg>`
+                                title: "Estirado de Tinta en la Paleta",
+                                content: "Deposita un cordón pequeño de tinta sobre un cristal de trabajo. Pasa el rodillo de goma extendiéndola en franjas cruzadas hasta lograr una película uniforme y delgada.",
+                                svg: `<svg viewBox="0 0 200 80" class="w-full h-24 mx-auto"><rect x="30" y="15" width="140" height="50" fill="#cbd5e1" rx="4"/><rect x="60" y="25" width="80" height="30" fill="#1e293b" opacity="0.9" rx="2"/><text x="100" y="44" font-size="9" font-weight="bold" fill="white" text-anchor="middle">Película Delgada de Tinta</text></svg>`
+                            },
+                            {
+                                type: "theory",
+                                title: "Textura 'Piel de Naranja' y Sonido de Velkro",
+                                content: "Un exceso de tinta obstruirá los finos surcos tallados. La tinta está lista cuando el rodillo muestra una **textura satina micro-granulada (piel de naranja)** y emite un suave crepitar al rodar.",
+                                svg: `<svg viewBox="0 0 200 80" class="w-full h-24 mx-auto"><rect x="50" y="20" width="100" height="25" rx="12" fill="#0f172a"/><rect x="90" y="45" width="20" height="30" fill="#475569"/><text x="100" y="14" text-anchor="middle" font-size="9" font-weight="bold" fill="#16a34a">Micro-granulado perfecto</text></svg>`
                             },
                             {
                                 type: "quiz-single",
-                                question: "¿Cuál es la señal auditiva/visual de que la tinta en el rodillo está lista?",
-                                options: ["Charco brillante y goteo", "Sonido suavecito de velcro y textura piel de naranja", "Superficie seca sin brillo"],
+                                question: "¿Qué error grave ocurre si aplicas una capa de tinta demasiado gruesa con el rodillo?",
+                                options: ["La estampa queda muy pálida", "La tinta se rebalsa hacia los surcos tallados tapando los detalles", "El papel se vuelve verde"],
                                 correct: 1,
-                                feedback: "¡Excelente! Una capa delgada evita que la tinta obstruya los surcos tallados."
+                                feedback: "¡Correcto! El 'empaste' ocurre cuando la tinta desborda las zonas altas e invade los calados en V/U."
+                            },
+                            {
+                                type: "quiz-single",
+                                question: "¿Cuál es la señal auditiva y visual de una carga de tinta ideal en la paleta?",
+                                options: ["Un charco líquido brillante que gotea", "Sonido suave crepitante de velcro y textura terciopelo piel de naranja", "Superficie polvo seca"],
+                                correct: 1,
+                                feedback: "¡Impecable! La textura aterciopelada garantiza transferencia limpia sin manchas de acumulación."
                             }
                         ]
                     },
                     {
                         id: "les-4-2",
-                        title: "Estampa Práctica con Baren o Cuchara",
+                        title: "Estampa Manual con Baren y Cuchara",
                         steps: [
                             {
                                 type: "theory",
-                                title: "Frotado Manual en Espiral",
-                                content: "Coloca el papel sobre la matriz entintada. Con un <strong>Baren japonés</strong> o el reverso de una <strong>cuchara de madera</strong>, realiza frotaciones circulares desde el centro hacia los bordes aplicando presión firme.",
-                                svg: `<svg viewBox="0 0 200 90" class="w-full h-28 mx-auto"><rect x="30" y="45" width="140" height="20" fill="#d97706"/><rect x="35" y="38" width="130" height="5" fill="#f8fafc" stroke="#cbd5e1"/><circle cx="100" cy="28" r="16" fill="#15803d"/><text x="100" y="82" text-anchor="middle" font-size="10" font-weight="bold" fill="#0f172a">Frotado circular con Baren</text></svg>`
+                                title: "Uso del Baren Japonés Tradicional",
+                                content: "El **Baren** es un disco plano trenzado con hoja de bambú. Se sostiene firmemente y se desliza con presión constante realizando espirales desde el centro hacia las esquinas.",
+                                svg: `<svg viewBox="0 0 200 90" class="w-full h-28 mx-auto"><rect x="30" y="50" width="140" height="15" fill="#d97706"/><rect x="35" y="43" width="130" height="5" fill="#ffffff" stroke="#94a3b8"/><circle cx="100" cy="30" r="18" fill="#15803d"/><text x="100" y="82" text-anchor="middle" font-size="10" font-weight="bold" fill="#0f172a">Presión en Espiral con Baren</text></svg>`
+                            },
+                            {
+                                type: "theory",
+                                title: "Técnica de Sustitución: La Cuchara de Madera",
+                                content: "Si no posees Baren, la panza curva de una **cuchara de madera o metal** es excelente. Frota con movimientos circulares pequeños; el área reducida de contacto concentra la fuerza ejercida.",
+                                svg: `<svg viewBox="0 0 200 70" class="w-full h-20 mx-auto"><path d="M 40 35 Q 100 5 160 35 L 140 40 Q 100 20 60 40 Z" fill="#78350f"/><text x="100" y="60" text-anchor="middle" font-size="9" font-weight="bold" fill="#0f172a">Frotado focalizado con dorso de cuchara</text></svg>`
                             },
                             {
                                 type: "quiz-single",
-                                question: "¿Qué técnica de frotado garantiza una transferencia uniforme con cuchara o baren?",
-                                options: ["Golpear fuertemente el papel", "Movimientos en espiral del centro hacia afuera", "Frotar solo las esquinas"],
+                                question: "¿Por qué el frotado manual debe hacerse siempre en movimientos espirales continuos?",
+                                options: ["Para no arrugar el papel y repartir la presión equitativamente", "Para romper la matriz", "Para acelerar el secado"],
+                                correct: 0,
+                                feedback: "¡Así es! Los movimientos circulares evitan mover el papel de su posición o generar pliegues."
+                            },
+                            {
+                                type: "quiz-single",
+                                question: "¿Cómo puedes verificar si la estampa ha transferido bien la tinta sin arruinar la alineación?",
+                                options: ["Levantando todo el papel de golpe", "Sosteniendo la mitad del papel firme contra la matriz y levantando una esquina cuidadosamente para inspeccionar", "Soplando fuerte"],
                                 correct: 1,
-                                feedback: "¡Correcto! Los movimientos circulares distribuyen la presión sin mover ni arrugar el papel."
+                                feedback: "¡Excelente truco! Mirar una esquina manteniendo el resto anclado te permite volver a frotar si faltó tinta en algún sector."
                             }
                         ]
                     }
@@ -490,45 +672,70 @@
             },
             {
                 id: "mod-5",
-                title: "Módulo 5: Registro y Edición Avanzada",
-                desc: "Marcos de registro, matriz perdida y limpieza.",
-                color: "indigo",
+                title: "Módulo 5: Registro y Edición Múltiple",
+                desc: "Plantillas de centrado, matriz perdida y firmas de edición.",
                 lessons: [
                     {
                         id: "les-5-1",
-                        title: "Plantilla de Registro de 2 Rectángulos",
+                        title: "Marcos de Registro y Alineación",
                         steps: [
                             {
                                 type: "theory",
-                                title: "Alineación Perfecta",
-                                content: "Para lograr márgenes iguales y centrar la estampa, dibuja en un papel base dos rectángulos concéntricos: el <strong>interior para encajar la matriz</strong> y el <strong>exterior para alinear el papel</strong>.",
-                                svg: `<svg viewBox="0 0 200 90" class="w-full h-28 mx-auto"><rect x="20" y="10" width="160" height="70" fill="none" stroke="#6366f1" stroke-width="2" stroke-dasharray="3"/><rect x="50" y="25" width="100" height="40" fill="#f59e0b" opacity="0.8"/><text x="100" y="48" text-anchor="middle" font-size="9" font-weight="bold" fill="white">Matriz</text><text x="100" y="85" text-anchor="middle" font-size="9" font-weight="bold" fill="#6366f1">Límite del Papel</text></svg>`
+                                title: "La Plantilla de Doble Recuadro",
+                                content: "Para que el dibujo quede perfectamente centrado en la hoja con márgenes limpios, dibuja en un papel base dos rectángulos: uno interior exacto a la matriz y uno exterior para el papel.",
+                                svg: `<svg viewBox="0 0 220 90" class="w-full h-28 mx-auto"><rect x="20" y="10" width="180" height="70" fill="none" stroke="#6366f1" stroke-width="2" stroke-dasharray="4"/><rect x="60" y="25" width="100" height="40" fill="#f59e0b"/><text x="110" y="48" font-size="10" font-weight="black" fill="white" text-anchor="middle">Matriz</text><text x="110" y="85" font-size="9" font-weight="bold" fill="#6366f1" text-anchor="middle">Marco de Papel</text></svg>`
                             },
                             {
                                 type: "quiz-single",
-                                question: "¿Para qué sirve una plantilla o marco de registro?",
-                                options: ["Para secar la tinta", "Para centrar exactamente la estampa en el papel", "Para limpiar la gubia"],
+                                question: "¿Cuál es el propósito indispensable de una plantilla de registro?",
+                                options: ["Impedir que se manche la mesa", "Asegurar que todas las copias de la serie queden centradas en la misma posición del papel", "Acelerar la talla"],
                                 correct: 1,
-                                feedback: "¡Impecable! Un registro preciso es indispensable para tirajes de varias copias iguales."
+                                feedback: "¡Correcto! Permite que un tiraje de 20 estampas sea totalmente homogéneo."
+                            },
+                            {
+                                type: "theory",
+                                title: "Técnica de Cintas de Tope (Guías en L)",
+                                content: "Puedes pegar dos trozos angulares de cartón espeso formando esquinas L. Encaja la matriz en una esquina y haz coincidir la esquina del papel en la otra.",
+                                svg: `<svg viewBox="0 0 200 70" class="w-full h-20 mx-auto"><path d="M 30 10 L 30 60 L 170 60" fill="none" stroke="#dc2626" stroke-width="6"/><text x="100" y="40" text-anchor="middle" font-size="9" font-weight="bold" fill="#0f172a">Topes mecánicos en L</text></svg>`
+                            },
+                            {
+                                type: "quiz-single",
+                                question: "¿Por qué es crucial mantener los márgenes del papel limpios de tinta al registrar?",
+                                options: ["Por estética y valor comercial de la serie gráfica", "Para no gastar papel", "Porque la tinta transparente no existe"],
+                                correct: 0,
+                                feedback: "¡Muy bien! Unos márgenes impolutos y uniformes distinguen el trabajo profesional de taller."
                             }
                         ]
                     },
                     {
                         id: "les-5-2",
-                        title: "Técnica de Matriz Perdida (Reductiva)",
+                        title: "Técnica de Matriz Perdida y Nomenclatura",
                         steps: [
                             {
                                 type: "theory",
-                                title: "Estampa Multicolor con Una Sola Plancha",
-                                content: "En la <strong>matriz perdida</strong> se imprime el primer color claro. Luego se sigue tallando la <em>misma</em> matriz para imprimir el segundo color más oscuro encima, destruyendo progresivamente la matriz.",
-                                svg: `<svg viewBox="0 0 200 90" class="w-full h-28 mx-auto"><rect x="30" y="20" width="60" height="50" fill="#fef08a" stroke="#d97706" stroke-width="2"/><text x="60" y="82" text-anchor="middle" font-size="9" font-weight="bold" fill="#0f172a">1.º Color (Amarillo)</text><rect x="110" y="20" width="60" height="50" fill="#fef08a" stroke="#d97706" stroke-width="2"/><path d="M 120 30 L 160 60" stroke="#dc2626" stroke-width="12"/><text x="140" y="82" text-anchor="middle" font-size="9" font-weight="bold" fill="#0f172a">2.º Color sobrepuesto</text></svg>`
+                                title: "Linograbado a Matriz Perdida (Reductivo)",
+                                content: "Es un método multicolor con **una sola matriz**. Tallamos y estampamos el color más claro (ej. amarillo). Luego seguimos tallando la misma matriz y estampamos encima el segundo color (ej. rojo). Al final la matriz original se destruye progresivamente.",
+                                svg: `<svg viewBox="0 0 220 80" class="w-full h-24 mx-auto"><rect x="20" y="15" width="70" height="50" fill="#fef08a" stroke="#d97706" stroke-width="2"/><text x="55" y="77" text-anchor="middle" font-size="8" font-weight="bold" fill="#0f172a">1.º Color Claro</text><rect x="130" y="15" width="70" height="50" fill="#fef08a" stroke="#d97706" stroke-width="2"/><path d="M 140 25 L 190 55" stroke="#dc2626" stroke-width="14"/><text x="165" y="77" text-anchor="middle" font-size="8" font-weight="bold" fill="#0f172a">2.º Color encima</text></svg>`
                             },
                             {
                                 type: "quiz-single",
-                                question: "¿Cuál es la característica principal de la técnica de linograbado a matriz perdida?",
-                                options: ["Usa 5 matrices diferentes", "Se destruye progresivamente la misma matriz en cada color", "No usa tinta"],
+                                question: "¿Por qué se llama 'matriz perdida' a esta técnica reductiva de color?",
+                                options: ["Porque la matriz se traspapela y se pierde en el taller", "Porque la matriz se va destruyendo en cada paso de color y no se puede reimprimir la serie", "Porque usa tintas invisibles"],
                                 correct: 1,
-                                feedback: "¡Perfecto! Al ir re-tallando la misma plancha entre cada capa de color, la matriz original no se puede reutilizar."
+                                feedback: "¡Perfecto! Al ir re-tallando la misma plancha entre capas, resulta imposible volver a imprimir el primer color."
+                            },
+                            {
+                                type: "theory",
+                                title: "Firma de Edición Profesional (P/A, 1/10)",
+                                content: "A lápiz grafito debajo de la estampa se anotan tres datos: a la izquierda la numeración o tiraje (ej. `3/20`), al centro el título entre comillas (`\"El Mar\"`) y a la derecha la firma del artista y año (`P. Gómez 2026`). `P/A` significa Prueba de Artista.",
+                                svg: `<svg viewBox="0 0 240 60" class="w-full h-16 mx-auto"><rect x="10" y="10" width="220" height="30" fill="#ffffff" stroke="#cbd5e1"/><text x="30" y="30" font-size="9" font-weight="extrabold" fill="#475569">1/10</text><text x="120" y="30" font-size="9" font-weight="extrabold" fill="#475569" text-anchor="middle">"Noche Viva"</text><text x="210" y="30" font-size="9" font-weight="extrabold" fill="#475569" text-anchor="end">R. Silva 2026</text></svg>`
+                            },
+                            {
+                                type: "quiz-single",
+                                question: "¿Qué significa la sigla 'P/A' escrita con lápiz grafito en la esquina inferior izquierda?",
+                                options: ["Papel Amarillo", "Prueba de Artista (copias de ensayo fuera de la tirada numerada)", "Prensa Automática"],
+                                correct: 1,
+                                feedback: "¡Excelente! Las Pruebas de Artista son las muestras reservadas para el autor para verificar la evolución del grabado."
                             }
                         ]
                     }
@@ -536,7 +743,7 @@
             }
         ];
 
-        // --- APP ENGINE STATE & METHODS ---
+        // --- APP LOGIC & STATE ENGINE ---
         class App {
             constructor() {
                 this.state = {
@@ -558,13 +765,12 @@
                 lucide.createIcons();
             }
 
-            // --- LOCAL STORAGE ---
             saveState() {
-                localStorage.setItem('linolingo_v2_state', JSON.stringify(this.state));
+                localStorage.setItem('linolingo_v3_state', JSON.stringify(this.state));
             }
 
             loadState() {
-                const saved = localStorage.getItem('linolingo_v2_state');
+                const saved = localStorage.getItem('linolingo_v3_state');
                 if (saved) {
                     try {
                         this.state = { ...this.state, ...JSON.parse(saved) };
@@ -578,20 +784,18 @@
                 document.getElementById('stat-streak').textContent = this.state.streak;
             }
 
-            // --- DUOLINGO SERPENTINE PATH RENDERER ---
+            // Render Duolingo Serpentine Map
             renderSerpentinePath() {
                 const container = document.getElementById('serpentine-path-container');
                 container.innerHTML = '';
 
-                // Horizontal offsets for Duolingo wavy effect (percentages)
-                const offsets = [0, 25, 45, 25, 0, -25, -45, -25];
+                const offsets = [0, 30, 50, 30, 0, -30, -50, -30];
                 let globalNodeIdx = 0;
                 let foundActive = false;
 
                 COURSE_DATA.forEach((mod, modIdx) => {
-                    // Module Section Header
                     const modHeader = document.createElement('div');
-                    modHeader.className = "text-center my-6 space-y-1 bg-slate-100/80 p-3 rounded-2xl border border-slate-200/80";
+                    modHeader.className = "text-center my-6 space-y-1 bg-slate-100/90 p-3.5 rounded-2xl border border-slate-200 shadow-sm";
                     modHeader.innerHTML = `
                         <span class="text-[10px] font-black tracking-widest text-amber-700 uppercase">Módulo ${modIdx + 1}</span>
                         <h3 class="font-display font-bold text-slate-800 text-base sm:text-lg">${mod.title}</h3>
@@ -599,8 +803,7 @@
                     `;
                     container.appendChild(modHeader);
 
-                    // Render Nodes of module
-                    mod.lessons.forEach((les, lesIdx) => {
+                    mod.lessons.forEach((les) => {
                         const isCompleted = this.state.completedLessons.includes(les.id);
                         let isCurrent = false;
 
@@ -634,7 +837,7 @@
                             <button onclick="app.onNodeClick('${les.id}', ${isCurrent || isCompleted})" class="w-16 h-16 sm:w-18 sm:h-18 rounded-full flex items-center justify-center transition-transform active:scale-95 ${buttonStyles}">
                                 ${iconInside}
                             </button>
-                            <span class="mt-2 text-xs font-bold text-slate-700 max-w-[120px] text-center leading-tight bg-white/80 backdrop-blur px-2 py-0.5 rounded-lg border border-slate-200">${les.title}</span>
+                            <span class="mt-2 text-[11px] font-bold text-slate-700 max-w-[130px] text-center leading-tight bg-white/90 backdrop-blur px-2 py-0.5 rounded-lg border border-slate-200">${les.title}</span>
                         `;
 
                         container.appendChild(nodeWrapper);
@@ -653,8 +856,8 @@
                 this.startLesson(lessonId);
             }
 
-            // --- NAVIGATION CONTROL ---
             showHome() {
+                this.hideFeedbackDrawer();
                 document.getElementById('view-map').classList.remove('hidden');
                 document.getElementById('view-lesson').classList.add('hidden');
                 this.renderSerpentinePath();
@@ -679,7 +882,7 @@
                 }
             }
 
-            // --- LESSON ENGINE ---
+            // Start Active Lesson
             startLesson(lessonId) {
                 let foundLesson = null;
                 COURSE_DATA.forEach(m => {
@@ -698,16 +901,20 @@
                 document.getElementById('view-map').classList.add('hidden');
                 document.getElementById('view-lesson').classList.remove('hidden');
 
+                this.hideFeedbackDrawer();
                 this.renderStep();
             }
 
             renderStep() {
+                this.hideFeedbackDrawer();
+
                 const step = this.activeLesson.steps[this.activeStepIndex];
                 const totalSteps = this.activeLesson.steps.length;
                 const progressPct = ((this.activeStepIndex + 1) / totalSteps) * 100;
 
-                // Progress Bar & Back Button
                 document.getElementById('lesson-progress-bar').style.width = `${progressPct}%`;
+                document.getElementById('step-indicator').textContent = `Paso ${this.activeStepIndex + 1} de ${totalSteps}`;
+
                 const prevBtn = document.getElementById('btn-prev-step');
                 if (this.activeStepIndex > 0) {
                     prevBtn.classList.remove('hidden');
@@ -715,9 +922,12 @@
                     prevBtn.classList.add('hidden');
                 }
 
-                // Next Button Text
-                const nextText = document.getElementById('btn-next-text');
-                nextText.textContent = (this.activeStepIndex === totalSteps - 1) ? 'Finalizar' : 'Continuar';
+                const mainText = document.getElementById('btn-main-text');
+                if (step.type === 'quiz-single') {
+                    mainText.textContent = 'Comprobar Respuesta';
+                } else {
+                    mainText.textContent = (this.activeStepIndex === totalSteps - 1) ? 'Finalizar Lección' : 'Continuar';
+                }
 
                 const container = document.getElementById('lesson-content');
                 container.innerHTML = '';
@@ -725,9 +935,9 @@
 
                 if (step.type === 'theory') {
                     container.innerHTML = `
-                        <div class="space-y-4 text-center">
+                        <div class="space-y-4 text-center my-auto">
                             ${step.svg || ''}
-                            <h3 class="font-display text-xl sm:text-2xl font-bold text-slate-800">${step.title}</h3>
+                            <h3 class="font-display text-xl sm:text-2xl font-bold text-slate-800 leading-tight">${step.title}</h3>
                             <p class="text-slate-600 text-sm sm:text-base leading-relaxed max-w-sm mx-auto">${step.content}</p>
                         </div>
                     `;
@@ -735,16 +945,15 @@
                     const optionsHtml = step.options.map((opt, idx) => `
                         <button onclick="app.selectOption(${idx})" id="opt-${idx}" class="w-full text-left p-3.5 sm:p-4 rounded-xl border-2 border-slate-200 hover:border-amber-400 font-bold text-slate-700 text-xs sm:text-sm transition-all flex items-center justify-between">
                             <span>${opt}</span>
-                            <div class="w-4 h-4 rounded-full border-2 border-slate-300 opt-radio"></div>
+                            <div class="w-4 h-4 rounded-full border-2 border-slate-300 opt-radio shrink-0 ml-2"></div>
                         </button>
                     `).join('');
 
                     container.innerHTML = `
-                        <div class="space-y-3 sm:space-y-4">
-                            <span class="text-[10px] font-black uppercase tracking-widest text-amber-600 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">Pregunta de Evaluación</span>
-                            <h3 class="font-display text-lg sm:text-xl font-bold text-slate-800">${step.question}</h3>
+                        <div class="space-y-3 sm:space-y-4 my-auto">
+                            <span class="text-[10px] font-black uppercase tracking-widest text-amber-600 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">Evaluación Interactiva</span>
+                            <h3 class="font-display text-lg sm:text-xl font-bold text-slate-800 leading-snug">${step.question}</h3>
                             <div class="space-y-2 pt-1">${optionsHtml}</div>
-                            <div id="quiz-feedback" class="hidden p-3 rounded-xl font-bold text-xs sm:text-sm"></div>
                         </div>
                     `;
                 }
@@ -776,7 +985,8 @@
                 }
             }
 
-            handleNextClick() {
+            // Fix 1: Mandatory Manual Action handling with explicit feedback banner
+            handleMainAction() {
                 const step = this.activeLesson.steps[this.activeStepIndex];
 
                 if (step.type === 'quiz-single') {
@@ -785,29 +995,20 @@
                         return;
                     }
 
-                    const feedbackEl = document.getElementById('quiz-feedback');
                     if (this.selectedAnswer === step.correct) {
                         sfx.correct();
-                        feedbackEl.className = "p-3 rounded-xl font-bold text-xs sm:text-sm bg-emerald-100 text-emerald-800 border border-emerald-300";
-                        feedbackEl.textContent = step.feedback;
-                        feedbackEl.classList.remove('hidden');
-
                         this.state.xp += 15;
                         this.renderStats();
-
-                        setTimeout(() => this.advanceStep(), 1100);
+                        this.showFeedbackDrawer(true, "¡Excelente Trabajo!", step.feedback);
                     } else {
                         sfx.incorrect();
-                        feedbackEl.className = "p-3 rounded-xl font-bold text-xs sm:text-sm bg-red-100 text-red-800 border border-red-300";
-                        feedbackEl.textContent = "Respuesta incorrecta. Revisa la opción y la teoría previa.";
-                        feedbackEl.classList.remove('hidden');
-
                         if (this.state.lives > 1) {
                             this.state.lives--;
                         }
                         this.renderStats();
                         this.saveState();
                         document.getElementById('lesson-lives-count').textContent = this.state.lives;
+                        this.showFeedbackDrawer(false, "Respuesta Incorrecta", "Revisa la opción elegida o retrocede a repasar la tarjeta técnica previa.");
                     }
                     return;
                 }
@@ -816,16 +1017,51 @@
                 this.advanceStep();
             }
 
+            // Display Feedback Drawer (Stays open until user clicks Continue)
+            showFeedbackDrawer(isCorrect, title, message) {
+                const drawer = document.getElementById('feedback-drawer');
+                const titleEl = document.getElementById('feedback-title');
+                const bodyEl = document.getElementById('feedback-body');
+                const iconContainer = document.getElementById('feedback-icon-container');
+                const continueBtn = document.getElementById('btn-feedback-continue');
+
+                titleEl.textContent = title;
+                bodyEl.textContent = message;
+
+                if (isCorrect) {
+                    drawer.className = "fixed inset-x-0 bottom-0 z-40 bg-emerald-50 border-t-4 border-emerald-500 shadow-2xl p-4 sm:p-5 animate-slide-up max-w-md mx-auto rounded-t-2xl";
+                    titleEl.className = "font-display font-bold text-base sm:text-lg text-emerald-900";
+                    iconContainer.className = "w-9 h-9 rounded-full flex items-center justify-center shrink-0 mt-0.5 bg-emerald-500 text-white";
+                    iconContainer.innerHTML = `<i data-lucide="check" class="w-5 h-5 stroke-[3]"></i>`;
+                    continueBtn.className = "w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-center shadow-md transition-all text-base flex items-center justify-center gap-2";
+                } else {
+                    drawer.className = "fixed inset-x-0 bottom-0 z-40 bg-red-50 border-t-4 border-red-500 shadow-2xl p-4 sm:p-5 animate-slide-up max-w-md mx-auto rounded-t-2xl";
+                    titleEl.className = "font-display font-bold text-base sm:text-lg text-red-900";
+                    iconContainer.className = "w-9 h-9 rounded-full flex items-center justify-center shrink-0 mt-0.5 bg-red-500 text-white";
+                    iconContainer.innerHTML = `<i data-lucide="x" class="w-5 h-5 stroke-[3]"></i>`;
+                    continueBtn.className = "w-full py-3.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-extrabold text-center shadow-md transition-all text-base flex items-center justify-center gap-2";
+                }
+
+                lucide.createIcons();
+                drawer.classList.remove('hidden');
+            }
+
+            hideFeedbackDrawer() {
+                const drawer = document.getElementById('feedback-drawer');
+                drawer.classList.add('hidden');
+            }
+
             advanceStep() {
+                this.hideFeedbackDrawer();
+
                 if (this.activeStepIndex < this.activeLesson.steps.length - 1) {
                     this.activeStepIndex++;
                     this.renderStep();
                 } else {
-                    // Lesson Completed
                     sfx.victory();
                     if (!this.state.completedLessons.includes(this.activeLesson.id)) {
                         this.state.completedLessons.push(this.activeLesson.id);
-                        this.state.xp += 30;
+                        this.state.xp += 40;
                     }
                     this.saveState();
                     this.renderStats();
@@ -834,7 +1070,6 @@
             }
         }
 
-        // Initialize App instance
         const app = new App();
         window.onload = () => app.init();
     </script>
